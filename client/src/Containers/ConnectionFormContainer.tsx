@@ -31,7 +31,7 @@ export default function ConnectionFormContainer({ onSubmit }: ConnectionFormCont
                     messagingDispatch(nicknameAction);
                 }}
             />
-            <label htmlFor="server-url">Server url</label>
+            <label htmlFor="server-url">Signaling server url</label>
             <input
                 id="server-url"
                 name="server-url"

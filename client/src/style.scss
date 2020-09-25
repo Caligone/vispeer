@@ -1,0 +1,24 @@
+@font-face {
+	font-family: 'Proxima Nova Regular';
+	src: url('../node_modules/font-proxima-nova/fonts/ProximaNova-Regular.eot');
+	src: local('Proxima Nova Regular'), local('ProximaNova-Regular'),
+		url('../node_modules/font-proxima-nova/fonts/ProximaNova-Regular.eot?#iefix') format('embedded-opentype'),
+		url('../node_modules/font-proxima-nova/fonts/ProximaNova-Regular.woff') format('woff'),
+		url('../node_modules/font-proxima-nova/fonts/ProximaNova-Regular.ttf') format('truetype');
+	font-weight: 300;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'Proxima Nova Bold';
+	src: url('../node_modules/font-proxima-nova/fonts/ProximaNova-Bold.eot');
+	src: local('Proxima Nova Bold'), local('ProximaNova-Bold'),
+		url('../node_modules/font-proxima-nova/fonts/ProximaNova-Bold.eot?#iefix') format('embedded-opentype'),
+		url('../node_modules/font-proxima-nova/fonts/ProximaNova-Bold.woff') format('woff'),
+		url('../node_modules/font-proxima-nova/fonts/ProximaNova-Bold.ttf') format('truetype');
+	font-weight: 800;
+	font-style: bold;
+}
+
+*, html, body {
+    font-family: 'Proxima Nova Regular', 'Helvetica';
+}

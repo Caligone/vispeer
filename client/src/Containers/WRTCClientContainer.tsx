@@ -4,17 +4,20 @@ import { useEffect, useRef } from 'preact/hooks';
 import {
     default as WRTCClient,
     EVENTS as WRTC_CONNECTION_EVENTS,
+    WRTCConnectionStatusChangedEventData,
 } from '../lib/WRTCClient';
 
 import * as ConnectionStatus from '../ContextModules/ConnectionsModule';
 import * as Messaging from '../ContextModules/MessagingModule';
 
 import { CONNECTION_STATUS } from '../@types/Connections';
-import { Message } from '../@types/Messaging';
+import { Message, MESSAGE_TYPES } from '../@types/Messaging';
 import ConnectionFormContainer from './ConnectionFormContainer';
 import MessagingContainer from './MessagingContainer';
 import { EventData } from '../lib/EventEmitter';
 import { TextMessageEventData } from '../Messages';
+
+import ConnectionStatusComponent from '../Components/ConnectionStatus';
 
 type WSConnectionStatusChangedEventData = {
     status: CONNECTION_STATUS,
@@ -27,22 +30,25 @@ export default function WRTCClientContainer(): h.JSX.Element {
         wrtcStatus,
         serverUrl,
     } = ConnectionStatus.useState();
+    console.log({ wrtcStatus });
     const { nickname } = Messaging.useState();
     const messagingDispatch = Messaging.useDispatch();
     const wrtcClientRef = useRef(new WRTCClient());
     useEffect(() => {
         // WS Connection status
         wrtcClientRef.current.addEventListener(
-            WRTC_CONNECTION_EVENTS.CONNECTION_STATUS_CHANGED,
+            WRTC_CONNECTION_EVENTS.WS_CONNECTION_STATUS_CHANGED,
             (rawEventData: EventData) => {
                 const eventData = rawEventData as unknown as WSConnectionStatusChangedEventData;
                 const statusAction = ConnectionStatus.setWSStatus(eventData.status);
                 connectionStatusDispatch(statusAction);
-                const messageAction = Messaging.addMessage({
+                const message: Message = {
+                    type: MESSAGE_TYPES.INTERNAL,
                     author: 'Internal',
                     content: `WS Connection status changed to ${eventData.status}`,
                     date: Date.now(),
-                });
+                };
+                const messageAction = Messaging.addMessage(message);
                 messagingDispatch(messageAction);
             },
         );
@@ -50,14 +56,17 @@ export default function WRTCClientContainer(): h.JSX.Element {
         wrtcClientRef.current.addEventListener(
             WRTC_CONNECTION_EVENTS.CONNECTION_STATUS_CHANGED,
             (rawEventData: EventData) => {
-                const eventData = rawEventData as unknown as WSConnectionStatusChangedEventData;
+                const eventData = rawEventData as unknown as WRTCConnectionStatusChangedEventData;
+                console.log('WRTC_CONNECTION_EVENTS.CONNECTION_STATUS_CHANGED', eventData);
                 const statusAction = ConnectionStatus.setWRTCStatus(eventData.status);
                 connectionStatusDispatch(statusAction);
-                const messageAction = Messaging.addMessage({
+                const message: Message = {
+                    type: MESSAGE_TYPES.INTERNAL,
                     author: 'Internal',
                     content: `WRTC Connection status changed to ${eventData.status}`,
                     date: Date.now(),
-                });
+                };
+                const messageAction = Messaging.addMessage(message);
                 messagingDispatch(messageAction);
             },
         );
@@ -65,7 +74,10 @@ export default function WRTCClientContainer(): h.JSX.Element {
         wrtcClientRef.current.addEventListener(
             WRTC_CONNECTION_EVENTS.TEXT_MESSAGE,
             (rawEventData: EventData) => {
-                const eventData = rawEventData as TextMessageEventData;
+                const eventData = {
+                    ...rawEventData as TextMessageEventData,
+                    type: MESSAGE_TYPES.REMOTE,
+                };
                 const action = Messaging.addMessage(eventData);
                 messagingDispatch(action);
             },
@@ -78,8 +90,10 @@ export default function WRTCClientContainer(): h.JSX.Element {
     
     return (
         <div>
-            <p>WS Connection Status: {wsStatus} </p>
-            <p>WRTC Connection Status: {wrtcStatus} </p>
+            <div>
+                <ConnectionStatusComponent name="Server" status={wsStatus} />
+                <ConnectionStatusComponent name="Peer" status={wrtcStatus} />
+            </div>
             <ConnectionFormContainer onSubmit={(e) => {
                 e.preventDefault();
                 wrtcClientRef.current.setNickname(nickname);

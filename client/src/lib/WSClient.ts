@@ -76,7 +76,7 @@ export default class WSClient {
         if (!this.socket) {
             throw new Error('Invalid socket');
         }
-        console.debug(`Sending ${eventName}`, data);
+        // console.debug(`Sending ${eventName}`, data);
         this.socket.emit(eventName, data);
     }
 

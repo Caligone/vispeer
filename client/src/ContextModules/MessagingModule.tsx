@@ -1,7 +1,7 @@
 import { h, createContext } from 'preact';
 import { useContext, useReducer } from 'preact/hooks';
 
-import { Message } from '../@types/Messaging';
+import { Message, MESSAGE_TYPES } from '../@types/Messaging';
 import { Action, Dispatch } from '../@types/Module';
 
 type State = {
@@ -53,9 +53,11 @@ function Reducer(state: State = defaultState, action: Action): State {
             return {
                 ...state,
                 messages: [
-                    ...state.messages,
-                    (action as AddMessageAction).payload.message,
-                ],
+                    ...state.messages, {
+                        ...(action as AddMessageAction).payload.message,
+                        date: Date.now(),
+                    },
+                ].sort((a, b) => b.date - a.date),
             };
         }
         case ACTIONS.SET_NICKNAME: {

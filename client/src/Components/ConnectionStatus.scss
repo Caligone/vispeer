@@ -1,0 +1,22 @@
+.c-connection-status {
+    display: flex;
+    align-items: center;
+    .c-connection-status__light {
+        width: 14px;
+        height: 14px;
+        margin: 3px;
+        border-radius: 100%;
+        &.c-connection-status__light--idle {
+            background-color: #888888;
+        }
+        &.c-connection-status__light--connecting {
+            background-color: #e2b63d;
+        }
+        &.c-connection-status__light--connected {
+            background-color: #55d15b;
+        }
+        &.c-connection-status__light--disconnected {
+            background-color: #d64b4b;
+        }
+    }
+}
