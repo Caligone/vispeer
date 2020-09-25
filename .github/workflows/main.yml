@@ -1,0 +1,39 @@
+name: Continuous Deployment
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    name: Deployment
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create the identity file
+        env:
+          DEPLOYMENT_KEY: ${{ secrets.DEPLOYMENT_KEY }}
+        run: |
+          echo "$DEPLOYMENT_KEY" | base64 --decode > deployment.key
+          chmod 400 deployment.key
+
+      - name: Set the host fingerprint
+        env:
+          DEPLOYMENT_HOST_FINGERPRINT: ${{ secrets.DEPLOYMENT_HOST_FINGERPRINT }}
+        run: |
+          echo "$DEPLOYMENT_HOST_FINGERPRINT" | base64 --decode > local_known_hosts
+
+      - name: Update the code on production server
+        env:
+          DEPLOYMENT_SERVER: ${{ secrets.DEPLOYMENT_SERVER }}
+          DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
+          DEPLOYMENT_PATH: ${{ secrets.DEPLOYMENT_PATH }}
+          DEPLOYMENT_SCRIPT_PATH: ${{ secrets.DEPLOYMENT_SCRIPT_PATH }}
+        run: |
+          ssh -o "UserKnownHostsFile=local_known_hosts" -i deployment.key $DEPLOYMENT_USER@$DEPLOYMENT_SERVER git -C "$DEPLOYMENT_PATH" fetch origin
+          ssh -o "UserKnownHostsFile=local_known_hosts" -i deployment.key $DEPLOYMENT_USER@$DEPLOYMENT_SERVER git -C "$DEPLOYMENT_PATH" checkout "${GITHUB_SHA}"
+          ssh -o "UserKnownHostsFile=local_known_hosts" -i deployment.key $DEPLOYMENT_USER@$DEPLOYMENT_SERVER $DEPLOYMENT_SCRIPT_PATH
+
