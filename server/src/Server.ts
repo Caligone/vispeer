@@ -1,7 +1,6 @@
 import SocketIO from 'socket.io';
 import Express from 'express';
-import fs from 'fs';
-import { default as Https, Server as HttpsServer } from 'https';
+import { default as Http, Server as HttpServer } from 'http';
 import * as Messages from './Messages';
 import Peer from 'simple-peer';
 
@@ -14,19 +13,15 @@ interface User {
 export default class Server {
 
     port: number;
-    app: HttpsServer;
-    server: HttpsServer | null = null;
+    app: HttpServer;
+    server: HttpServer | null = null;
     io: SocketIO.Server | null = null;
 
     room: Map<string, User> = new Map();
 
     constructor(port: number) {
         this.port = port;
-        this.app = Https.createServer({
-            key: fs.readFileSync('./key.pem'),
-            cert: fs.readFileSync('./cert.pem'),
-            passphrase: 'localdev'
-        }, Express());
+        this.app = Http.createServer({}, Express());
     }
 
     public start() {
