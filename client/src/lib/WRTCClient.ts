@@ -60,6 +60,10 @@ export default class WRTCClient {
         return this.wsClient.getNickname();
     }
 
+    public setRoomName(roomName: string): void {
+        this.wsClient.setRoomName(roomName);
+    }
+
     public addEventListener(eventName: EVENTS, listener: (data: EventData) => void): void {
         return this.eventEmitter.addEventListener(eventName as unknown as string, listener);
     }

@@ -6,6 +6,7 @@ import { Action, Dispatch } from '../@types/Module';
 
 type State = {
     nickname: string,
+    roomName: string,
     messages: Array<Message>,
 };
 
@@ -15,6 +16,7 @@ type ProviderProps = {
 
 const defaultState = {
     nickname: Math.random().toString(36).substring(7),
+    roomName: Math.random().toString(36).substring(7),
     messages: [],
 };
 
@@ -25,6 +27,7 @@ const DispatchContext = createContext<Dispatch>(() => {});
 const moduleName = 'MESSAGING_MODULE';
 const ACTIONS = {
     SET_NICKNAME: `${moduleName}/SET_NICKNAME`,
+    SET_ROOM_NAME: `${moduleName}/SET_ROOM_NAME`,
     ADD_MESSAGE: `${moduleName}/ADD_MESSAGE`,
 } as const;
 
@@ -36,6 +39,10 @@ interface SetNicknameAction extends Action {
     type: typeof ACTIONS.ADD_MESSAGE,
     payload: { nickname: string },
 }
+interface SetRoomNameAction extends Action {
+    type: typeof ACTIONS.SET_ROOM_NAME,
+    payload: { roomName: string },
+}
 
 export const addMessage = (message: Message): AddMessageAction => ({
     type: ACTIONS.ADD_MESSAGE,
@@ -44,6 +51,10 @@ export const addMessage = (message: Message): AddMessageAction => ({
 export const setNickname = (nickname: string): SetNicknameAction => ({
     type: ACTIONS.SET_NICKNAME,
     payload: { nickname },
+});
+export const setRoomName = (roomName: string): SetRoomNameAction => ({
+    type: ACTIONS.SET_ROOM_NAME,
+    payload: { roomName },
 });
 
 function Reducer(state: State = defaultState, action: Action): State {
@@ -63,6 +74,12 @@ function Reducer(state: State = defaultState, action: Action): State {
             return {
                 ...state,
                 nickname: (action as SetNicknameAction).payload.nickname,
+            };
+        }
+        case ACTIONS.SET_ROOM_NAME: {
+            return {
+                ...state,
+                nickname: (action as SetRoomNameAction).payload.roomName,
             };
         }
         default:

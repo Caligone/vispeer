@@ -23,7 +23,11 @@ type WSConnectionStatusChangedEventData = {
     status: CONNECTION_STATUS,
 };
 
-export default function WRTCClientContainer(): h.JSX.Element {
+type WRTCClientContainerProps = {
+    roomName: string
+}
+
+export default function WRTCClientContainer({ roomName }: WRTCClientContainerProps): h.JSX.Element {
     const connectionStatusDispatch = ConnectionStatus.useDispatch()
     const {
         wsStatus,
@@ -84,6 +88,13 @@ export default function WRTCClientContainer(): h.JSX.Element {
             // TODO Clean up
         };
     }, []);
+
+    useEffect(() => {
+        // Set RoomName
+        const setRoomNameAction = Messaging.setRoomName(roomName);
+        messagingDispatch(setRoomNameAction);
+        wrtcClientRef.current.setRoomName(roomName);
+    }, [roomName]);
     
     return (
         <div>

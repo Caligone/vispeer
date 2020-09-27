@@ -22,7 +22,7 @@ export default class WSClient {
     protected socket: WebSocket | null = null;
 
     protected nickname = '';
-    protected roomName = 'awesome-room';
+    protected roomName = '';
 
     constructor() {
         this.eventEmitter = new EventEmitter();
@@ -30,6 +30,10 @@ export default class WSClient {
 
     public setNickname(nickname: string): void{
         this.nickname = nickname;
+    }
+
+    public setRoomName(roomName: string): void{
+        this.roomName = roomName;
     }
     
     public getNickname(): string {
