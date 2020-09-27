@@ -1,7 +1,7 @@
 import { h, createContext } from 'preact';
 import { useContext, useReducer } from 'preact/hooks';
 
-import { Message, MESSAGE_TYPES } from '../@types/Messaging';
+import { Message } from '../@types/Messaging';
 import { Action, Dispatch } from '../@types/Module';
 
 type State = {
@@ -47,7 +47,6 @@ export const setNickname = (nickname: string): SetNicknameAction => ({
 });
 
 function Reducer(state: State = defaultState, action: Action): State {
-    console.log('Messaging action dispatched', action);
     switch (action.type) {
         case ACTIONS.ADD_MESSAGE: {
             return {

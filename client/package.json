@@ -16,12 +16,10 @@
     "font-proxima-nova": "^1.0.1",
     "foundation-sites": "^6.6.3",
     "preact": "^10.4.8",
-    "simple-peer": "^9.7.2",
-    "socket.io-client": "^2.3.0"
+    "simple-peer": "^9.7.2"
   },
   "devDependencies": {
     "@types/simple-peer": "^9.6.0",
-    "@types/socket.io-client": "^1.4.33",
     "@typescript-eslint/eslint-plugin": "^4.1.1",
     "@typescript-eslint/parser": "^4.1.1",
     "eslint": "^7.9.0",

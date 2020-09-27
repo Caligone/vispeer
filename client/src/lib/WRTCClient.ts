@@ -68,10 +68,8 @@ export default class WRTCClient {
         return this.eventEmitter.removeEventListener(eventName as unknown as string, listener);
     }
 
-    public async connect(serverURL: string): Promise<void> {
-        const r = await this.wsClient.connect(serverURL);
-        await this.wsClient.sendRoomJoin('default room name');
-        return r;
+    public connect(serverURL: string): Promise<void> {
+        return this.wsClient.connect(serverURL);
     }
 
     public sendTextMessage(content: string): void {
@@ -127,7 +125,8 @@ export default class WRTCClient {
         this.peer.on('signal', (signal) => {
             this.wsClient.sendSignal(signal);
         });
-        this.peer.on('connect', () => {  
+        this.peer.on('connect', () => { 
+            this.wsClient.close(); 
             const connectedEventData: WRTCConnectionStatusChangedEventData = {
                 eventName: EVENTS.CONNECTION_STATUS_CHANGED,
                 status: CONNECTION_STATUS.CONNECTED,

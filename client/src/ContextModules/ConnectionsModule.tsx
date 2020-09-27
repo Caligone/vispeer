@@ -15,7 +15,7 @@ type State = {
 const defaultState = {
     wsStatus: CONNECTION_STATUS.IDLE,
     wrtcStatus: CONNECTION_STATUS.IDLE,
-    serverUrl: 'https://server.talk.calig.one',
+    serverUrl: 'wss://server.talk.calig.one',
 };
 
 const StateContext = createContext<State>(defaultState);
@@ -55,7 +55,6 @@ export const setServerUrl = (serverUrl: string): SetServerURLAction => ({
 });
 
 function Reducer(state: State = defaultState, action: Action): State {
-    console.log('Connection action dispatched', action);
     switch (action.type) {
         case ACTION_NAME.SET_WS_STATUS: {
             return {

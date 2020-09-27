@@ -11,7 +11,6 @@ type MessageProps = {
 };
 
 export default function Message({ messages }: MessageProps): h.JSX.Element {
-    console.log(messages);
     return (
         <div className="c-messages-container">
             {messages.map((message) => <MessageComponent message={message} />)}

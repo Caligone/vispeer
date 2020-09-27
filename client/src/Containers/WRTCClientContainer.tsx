@@ -30,7 +30,6 @@ export default function WRTCClientContainer(): h.JSX.Element {
         wrtcStatus,
         serverUrl,
     } = ConnectionStatus.useState();
-    console.log({ wrtcStatus });
     const { nickname } = Messaging.useState();
     const messagingDispatch = Messaging.useDispatch();
     const wrtcClientRef = useRef(new WRTCClient());
@@ -57,7 +56,6 @@ export default function WRTCClientContainer(): h.JSX.Element {
             WRTC_CONNECTION_EVENTS.CONNECTION_STATUS_CHANGED,
             (rawEventData: EventData) => {
                 const eventData = rawEventData as unknown as WRTCConnectionStatusChangedEventData;
-                console.log('WRTC_CONNECTION_EVENTS.CONNECTION_STATUS_CHANGED', eventData);
                 const statusAction = ConnectionStatus.setWRTCStatus(eventData.status);
                 connectionStatusDispatch(statusAction);
                 const message: Message = {
@@ -84,7 +82,6 @@ export default function WRTCClientContainer(): h.JSX.Element {
         );
         return () => {
             // TODO Clean up
-            console.log('WRTCClientContainer.useEffect cleanup');
         };
     }, []);
     

@@ -1,5 +1,4 @@
 import Peer from 'simple-peer';
-import SocketIOClient from 'socket.io-client';
 import EventEmitter, { EventData } from './EventEmitter';
 import * as Messages from '../Messages';
 import { CONNECTION_STATUS } from '../@types/Connections';
@@ -20,9 +19,10 @@ export default class WSClient {
     protected eventEmitter: EventEmitter;
 
     protected url = '';
-    protected socket: SocketIOClient.Socket | null = null;
+    protected socket: WebSocket | null = null;
 
     protected nickname = '';
+    protected roomName = 'awesome-room';
 
     constructor() {
         this.eventEmitter = new EventEmitter();
@@ -55,41 +55,50 @@ export default class WSClient {
             eventData,
         );
         return new Promise((resolve) => {
-            this.socket = SocketIOClient(this.url);
-            this.socket.once('connect', () => resolve());
-            this.setup();
+            const url = new URL(this.url);
+            url.searchParams.set('nickname', this.nickname);
+            url.searchParams.set('roomName', this.roomName);
+            this.socket = new WebSocket(url.toString());
+            this.socket.onmessage = this.onMessage.bind(this);
+            this.socket.onopen = () => {
+                this.onConnect();
+                resolve();
+            };
+            this.socket.onclose = this.onClose.bind(this);
         })
     }
 
-    protected setup(): void {
+    protected onMessage(event: MessageEvent): void {
+        const data = JSON.parse(event.data);
+        switch (data.type) {
+            case Messages.NAMES.PeerSignal:
+                this.onPeerSignal(data.payload);
+                break;
+            case Messages.NAMES.RoomJoined:
+                this.onRoomJoined(data.payload);
+                break;
+            case Messages.NAMES.RoomLeft:
+                this.onRoomLeft(data.payload);
+                break;
+        }
+    }
+
+    protected send(eventName: string, payload: unknown): void {
         if (!this.socket) {
             throw new Error('Invalid socket');
         }
-        this.socket.on('connect', this.onConnect.bind(this));
-        this.socket.on('disconnect', this.onDisconnect.bind(this));
-        this.socket.on(Messages.NAMES.PeerSignal, this.onPeerSignal.bind(this));
-        this.socket.on(Messages.NAMES.RoomJoined, this.onRoomJoined.bind(this));
-        this.socket.on(Messages.NAMES.RoomLeft, this.onRoomLeft.bind(this));
-    }
-
-    protected send(eventName: string, data: unknown): void {
-        if (!this.socket) {
-            throw new Error('Invalid socket');
-        }
-        // console.debug(`Sending ${eventName}`, data);
-        this.socket.emit(eventName, data);
-    }
-
-    public sendRoomJoin(roomName: string): void {
-        const roomJoinMessage: Messages.RoomJoin = {
-            roomName,
-            nickname: this.nickname,
-        };
-        this.send(Messages.NAMES.RoomJoin, roomJoinMessage);
+        this.socket.send(JSON.stringify({
+            type: eventName,
+            payload,
+        }));
     }
 
     public sendSignal(signal: Peer.SignalData): void {
         this.send(Messages.NAMES.PeerSignal, signal);
+    }
+
+    public close(): void {
+        this.socket?.close();
     }
 
     /**
@@ -107,7 +116,7 @@ export default class WSClient {
         );
     }
 
-    protected onDisconnect(): void {
+    protected onClose(): void {
         const eventData: WSConnectionStatusChangedEventData = {
             eventName: EVENTS.CONNECTION_STATUS_CHANGED,
             status: CONNECTION_STATUS.DISCONNECTED,
