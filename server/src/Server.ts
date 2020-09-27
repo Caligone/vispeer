@@ -1,92 +1,129 @@
-import SocketIO from 'socket.io';
-import Express from 'express';
-import { default as Http, Server as HttpServer } from 'http';
+import WebSocket from 'ws';
+import { v4 as generateUuid } from 'uuid';
 import * as Messages from './Messages';
 import Peer from 'simple-peer';
+import { IncomingMessage } from 'http';
 
-interface User {
-    socketId: string
+type User = {
+    identifier: string
     nickname: string
+    socket: WebSocket
     isInitiator: boolean
+}
+
+type ConnectionParameters = {
+    nickname: string
+    roomName: string
+}
+
+const enum ERROR_CODES {
+    INVALID_CONNECTION_PARAMETER = 1,
+    ROOM_FULL = 2,
 }
 
 export default class Server {
 
     port: number;
-    app: HttpServer;
-    server: HttpServer | null = null;
-    io: SocketIO.Server | null = null;
+    webSocketServer: WebSocket.Server;
 
-    room: Map<string, User> = new Map();
+    rooms: Map<string, Set<User>> = new Map();
 
     constructor(port: number) {
         this.port = port;
-        this.app = Http.createServer({}, Express());
+        this.webSocketServer = new WebSocket.Server({ port });
+        this.webSocketServer.on('connection', this.onConnection.bind(this));
     }
 
-    public start() {
-        this.server = this.app.listen(this.port);
-        this.io = SocketIO.listen(this.server);
-        this.io.on('connection', (socket) => {
-            this.setup(socket);
-        })
-    }
-
-    protected setup(socket: SocketIO.Socket): void {
-        socket.on(Messages.NAMES.RoomJoin, this.onRoomJoin.bind(this, socket));
-        socket.on(Messages.NAMES.PeerSignal, this.onPeerSignal.bind(this, socket));
-        socket.once('disconnect', this.onDisconnect.bind(this, socket));
-    }
-
-    /**
-     * HANDLERS
-     */
-    protected onRoomJoin(socket: SocketIO.Socket, message: Messages.RoomJoin): void {
-        let hasOwner: boolean = false;
-        this.room.forEach(user => {
-            if (user.isInitiator) {
-                hasOwner = true;
-            }
-        });;
-        const roomJoinedMessage: Messages.RoomJoined = {
-            roomName: message.roomName,
-            isInitiator: this.room.size === 0 || !hasOwner,
-            nickname: message.nickname,
+    protected static getConnectionParameters(request: IncomingMessage): ConnectionParameters | null {
+        if (!request.url) return null;
+        const url = new URL(request.url, 'ws://localhost');
+        const nickname = url.searchParams.get('nickname');
+        const roomName = url.searchParams.get('roomName');
+        if (!nickname || !roomName) {
+            return null;
+        }
+        return {
+            nickname,
+            roomName,
         };
-        this.room.set(socket.id, {
-            socketId: socket.id,
-            isInitiator: roomJoinedMessage.isInitiator,
-            nickname: roomJoinedMessage.nickname,
-        });
-        socket.broadcast.emit(Messages.NAMES.RoomJoined, roomJoinedMessage);
-        this.room.forEach((user: User) => {
-            // if (user.socketId === socket.id) return;
-            socket.emit(Messages.NAMES.RoomJoined, {
-                roomName: message.roomName,
-                nickname: user.nickname,
-                isInitiator: user.isInitiator,
-            });
-        });
-        console.log(`User '${message.nickname}' join the room`);
     }
 
-    protected onPeerSignal(socket: SocketIO.Socket, signal: Peer.SignalData): void {
-        socket.broadcast.emit(Messages.NAMES.PeerSignal, signal);
+    public addUserToRoom(roomName: string, user: User): boolean {
+        if (!this.rooms.get(roomName)) {
+            this.rooms.set(roomName, new Set<User>());
+        }
+        if (this.rooms.get(roomName)!.size > 1) {
+            return false;
+        }
+        user.isInitiator = this.rooms.get(roomName)!.size === 0;
+        this.rooms.get(roomName)!.add(user);
+        return true;
     }
 
-    protected onDisconnect(socket: SocketIO.Socket): void {
-        const user = this.room.get(socket.id);
-        if (!user) {
-            console.log('User not connected left');
+    protected onConnection(socket: WebSocket, request: IncomingMessage) {
+        const connectionParameters = Server.getConnectionParameters(request);
+        if (!connectionParameters) {
+            socket.close(ERROR_CODES.INVALID_CONNECTION_PARAMETER, 'Invalid connection parameters');
             return;
         }
-        this.room.delete(socket.id);
+        const user: User = {
+            identifier: generateUuid(),
+            socket,
+            nickname: connectionParameters.nickname,
+            isInitiator: false,
+        };
+        if (!this.addUserToRoom(connectionParameters.roomName, user)) {
+            user.socket.close(ERROR_CODES.ROOM_FULL, 'The room is already full');
+            return;
+        }
+        socket.onmessage = this.onMessage.bind(this, user, connectionParameters.roomName)
+        socket.onclose = this.onClose.bind(this, user, connectionParameters.roomName);
+        this.rooms.get(connectionParameters.roomName)!.forEach((currentUser) => {
+            const roomJoinedMessage: Messages.RoomJoined = {
+                roomName: connectionParameters.roomName,
+                nickname: user.nickname,
+                isInitiator: user.isInitiator
+            };
+            currentUser.socket.send(JSON.stringify({
+                type: Messages.NAMES.RoomJoined,
+                payload: roomJoinedMessage
+            }));
+        });
+    }
+
+
+
+    protected onMessage(user: User, roomName: string, event: WebSocket.MessageEvent): void {
+        const data = JSON.parse(event.data.toString());
+        switch (data.type) {
+            case Messages.NAMES.PeerSignal:
+                this.onPeerSignal(user, roomName, data.payload);
+                break;
+        }
+    }
+
+    protected onPeerSignal(user: User, roomName: string, signal: Peer.SignalData): void {
+        this.rooms.get(roomName)!.forEach((currentUser) => {
+            if (currentUser.identifier === user.identifier) return;
+            currentUser.socket.send(JSON.stringify({
+                type: Messages.NAMES.PeerSignal,
+                payload: signal,
+            }));
+        });
+    }
+
+    protected onClose(user: User, roomName: string): void {
+        this.rooms.get(roomName)?.delete(user);
         const roomLeftMessage: Messages.RoomLeft = {
-            roomName: 'default room name',
+            roomName,
             nickname: user.nickname,
         };
-        socket.broadcast.emit(Messages.NAMES.RoomLeft, roomLeftMessage);
-        console.log(`User '${user.nickname}' left the room`);
+        this.rooms.get(roomName)?.forEach((user) => {
+            user.socket.send(JSON.stringify({
+                type: Messages.NAMES.RoomLeft,
+                payload: roomLeftMessage
+            }));
+        });
     }
 
 }
