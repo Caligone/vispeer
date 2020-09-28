@@ -1,0 +1,22 @@
+@import "colors";
+
+.c-button {
+    display: inline-block;
+    padding: 16px;
+    border-radius: 3px;
+    font-size: 18px;
+    font-weight: bold;
+    text-decoration: none;
+    border: 0;
+    &.c-button__color-primary {
+        background-color: $primary;
+        color: $invertedPrimary;
+        &:focus {
+            text-decoration: underline;
+        }
+        &:hover {
+            background-color: darken($primary, 20);
+            color: $invertedPrimary;
+        }
+    }
+}

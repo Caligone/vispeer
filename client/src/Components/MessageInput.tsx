@@ -17,7 +17,10 @@ export default function MessageInput({
 }: MessageProps): h.JSX.Element {
     return (
         <form onSubmit={onSubmit} className="c-message-input-container">
-            <label htmlFor="current-message">
+            <label
+                htmlFor="current-message"
+                className="c-message-input-label"
+            >
                 Message
             </label>
             <input
@@ -26,10 +29,17 @@ export default function MessageInput({
                 className="c-message-input"
                 type="text"
                 value={currentMessage}
-                placeholder={isDisabled ? 'Waiting for your peer...' : '...'}
+                placeholder={isDisabled ? 'Waiting for your peer...' : 'Type in your message...'}
                 disabled={isDisabled}
                 onInput={onInput}
             />
+            <button
+                type="submit"
+                className="c-message-input-submit"
+                disabled={isDisabled}
+            >
+                Send
+            </button>
         </form>
     );
 }

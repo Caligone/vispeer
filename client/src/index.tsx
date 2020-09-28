@@ -6,7 +6,7 @@ import 'preact/debug';
 
 import App from './App';
 
-const container = document.getElementById('app');
+const container = document.querySelector('body');
 if (container) {
     render(<App />, container);
 }

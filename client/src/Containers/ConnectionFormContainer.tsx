@@ -1,49 +1,40 @@
 import { h } from 'preact';
 
-import * as ConnectionStatus from '../ContextModules/ConnectionsModule';
-import * as Messaging from '../ContextModules/MessagingModule';
+import * as ConnectionStatus from '../Hooks/ConnectionsModule';
+import * as Messaging from '../Hooks/MessagingModule';
 
 import { CONNECTION_STATUS } from '../@types/Connections';
+
+import Button, { Color, NodeType } from '../Components/Button';
+import { FlexContainer } from '../Components/Utilities';
 
 type ConnectionFormContainerType = {
     onSubmit: h.JSX.GenericEventHandler<HTMLFormElement>,
 };
 
 export default function ConnectionFormContainer({ onSubmit }: ConnectionFormContainerType): h.JSX.Element | null {
-    const connectionStatusDispatch = ConnectionStatus.useDispatch();
-    const messagingDispatch = Messaging.useDispatch();
-    const { wsStatus, serverUrl } = ConnectionStatus.useState();
-    const { nickname } = Messaging.useState();
+    const { wsStatus } = ConnectionStatus.useState();
+    const { roomName } = Messaging.useState();
 
     if (wsStatus !== CONNECTION_STATUS.IDLE) return null;
     
     return (
-        <form onSubmit={onSubmit}>
-            <label htmlFor="nickname">Nickname</label>
-            <input
-                id="nickname"
-                name="nickname"
-                type="text"
-                value={nickname}
-                onInput={(e) => {
-                    e.preventDefault();
-                    const nicknameAction = Messaging.setNickname(e.currentTarget.value);
-                    messagingDispatch(nicknameAction);
-                }}
-            />
-            <label htmlFor="server-url">Signaling server url</label>
-            <input
-                id="server-url"
-                name="server-url"
-                type="url"
-                value={serverUrl}
-                onInput={(e) => {
-                    e.preventDefault();
-                    const serverUrlAction = ConnectionStatus.setServerUrl(e.currentTarget.value);
-                    connectionStatusDispatch(serverUrlAction);
-                }}
-            />
-            <input type="Submit" value="Connect" />
-        </form>
+        <FlexContainer
+            verticalCenter
+            horizontalCenter
+            className='u-width__full u-height__full u-text__center'
+        >
+            <div>
+                <h1>{roomName}</h1>
+                <form onSubmit={onSubmit}>
+                    <Button
+                        nodeType={NodeType.INPUT}
+                        color={Color.PRIMARY}
+                        type="Submit"
+                        value="Connect"
+                    />
+                </form>
+            </div>
+        </FlexContainer>
     );
 }

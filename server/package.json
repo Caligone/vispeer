@@ -6,8 +6,7 @@
   "scripts": {
     "start": "node src/index.ts",
     "dev": "nodemon src/index.ts",
-    "build": "tsc --project ./",
-    "dev:create-local-cert": "openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 --passout pass:\"localdev\" -subj \"/C=LL/ST=local/L=local/O=.../OU=.../CN=.../emailAddress=...\""
+    "build": "tsc --project ./"
   },
   "author": "Caligone",
   "private": true,

@@ -1,0 +1,22 @@
+/*
+ * Main colors
+ */
+$primary: #ffffff;
+$invertedPrimary: #000000;
+
+$textColor: $primary;
+$backgroundColor: $invertedPrimary;
+
+
+/*
+ *   Messaging variables
+ */
+$background: #f4f8fb;
+
+// Remote message
+$remoteMessageBackgroundColor: #e3eaf2;
+$remoteMessageColor: #0a0e31;
+
+// Local message
+$localMessageBackgroundColor: #11a5ed;
+$localMessageColor: #ffffff;

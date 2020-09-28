@@ -79,7 +79,7 @@ function Reducer(state: State = defaultState, action: Action): State {
         case ACTIONS.SET_ROOM_NAME: {
             return {
                 ...state,
-                nickname: (action as SetRoomNameAction).payload.roomName,
+                roomName: (action as SetRoomNameAction).payload.roomName,
             };
         }
         default:

@@ -1,20 +1,35 @@
+@import "colors";
+
+$messageContainerPadding: 10px;
+$messageInputContainerMargin: 10px;
+
 .c-message-input-container {
     position: fixed;
     bottom: 0;
     left: 0;
     display: flex;
     align-items: center;
-    width: calc(100vw - 15px);
-    border-radius: 5px 5px 0 0;
-    border: 3px solid #555;
-    padding-left: 8px;
-    padding-top: 3px;
-    padding-bottom: 3px;
+    width: calc(100vw - #{$messageContainerPadding} * 2);
+    margin: $messageInputContainerMargin;
+    padding: 15px;
+    box-sizing: border-box;
     .c-message-input {
         width: 100%;
-        padding: 5px;
+        padding: 8px;
         margin-left: 5px;
         border: 0;
+        border-radius: 3px 0 0 3px;
+        font-size: 16px;
+    }
+    .c-message-input-label {
+        // color: $localMessageColor
+    }
+    .c-message-input-submit {
+        border: 0;
+        padding: 8px;
+        border-radius: 0 3px 3px 0;
+        // color: $localMessageColor;
+        // background-color: $localMessageBackgroundColor;
         font-size: 16px;
     }
 }

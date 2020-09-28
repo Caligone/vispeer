@@ -1,7 +1,7 @@
 import { h } from 'preact';
 
-import * as Connections from '../ContextModules/ConnectionsModule';
-import * as Messaging from '../ContextModules/MessagingModule';
+import * as Connections from '../Hooks/ConnectionsModule';
+import * as Messaging from '../Hooks/MessagingModule';
 
 import MessagesContainer from '../Components/MessagesContainer';
 import MessageInputContainer from './MessageInputContainer';

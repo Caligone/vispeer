@@ -1,20 +1,21 @@
+@import "colors";
+
 .c-message {
-    margin: 15px 0;
+    margin: 5px 0;
     display: flex;
     flex-direction: column-reverse;
     flex-wrap: wrap;
     .c-message__content {
+        padding: 8px;
         border-radius: 5px;
     }
     &.c-message--local {
         flex-direction: row-reverse;
         .c-message__content {
             float: right;
-            padding: 6px;
-            background-color: #2980b9;
-            color: #ecf0f1;
-            border-radius: 5px;
-            box-shadow: 0 3px 0 0 #dddddd;
+            background-color: $localMessageBackgroundColor;
+            color: $localMessageColor;
+            border-radius: 5px 5px 0 5px;
             text-align: right;
         }
         .c-message__time {
@@ -25,11 +26,9 @@
         flex-direction: row;
         .c-message__content {
             float: left;
-            padding: 6px;
-            background-color: #bdc3c7;
-            color: #34495e;
-            border-radius: 5px;
-            box-shadow: 0 3px 0 0 #dddddd;
+            background-color: $remoteMessageBackgroundColor;
+            color: $remoteMessageColor;
+            border-radius: 5px 5px 5px 0;
             text-align: left;
         }
         .c-message__time {
@@ -37,10 +36,12 @@
         }
     }
     &.c-message--internal {
+        margin: 0;
+        padding: 5px;
         font-style: italic;
         text-align: center;
         font-size: 10px;
-        color: #555;
+        color: #8c9aa7;
         .c-message__time {
             font-size: 9px;
         }

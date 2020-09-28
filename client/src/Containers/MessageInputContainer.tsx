@@ -3,8 +3,8 @@ import { useState } from 'preact/hooks';
 import { Message, MESSAGE_TYPES } from '../@types/Messaging';
 import MessageInput from '../Components/MessageInput';
 
-import * as Messaging from '../ContextModules/MessagingModule';
-import * as Connections from '../ContextModules/ConnectionsModule';
+import * as Messaging from '../Hooks/MessagingModule';
+import * as Connections from '../Hooks/ConnectionsModule';
 import { CONNECTION_STATUS } from '../@types/Connections';
 
 type MessageInputContainerProps = {

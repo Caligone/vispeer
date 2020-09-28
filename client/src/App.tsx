@@ -1,8 +1,8 @@
 import { h } from 'preact';
 import { Router, Route } from 'preact-router';
 
-import * as Messaging from './ContextModules/MessagingModule';
-import * as Connections from './ContextModules/ConnectionsModule';
+import * as Messaging from './Hooks/MessagingModule';
+import * as Connections from './Hooks/ConnectionsModule';
 
 import HomePage from './Pages/HomePage';
 import JoinPage from './Pages/JoinPage';

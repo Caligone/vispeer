@@ -1,3 +1,16 @@
+@import './Components/colors';
+
+*, html, body {
+    font-family: 'Proxima Nova Regular', 'Helvetica';
+}
+
+body {
+	width: 100vw;
+	height: 100vh;
+	background-color: $backgroundColor;
+	color: $textColor;
+}
+
 @font-face {
 	font-family: 'Proxima Nova Regular';
 	src: url('../node_modules/font-proxima-nova/fonts/ProximaNova-Regular.eot');
@@ -17,8 +30,4 @@
 		url('../node_modules/font-proxima-nova/fonts/ProximaNova-Bold.ttf') format('truetype');
 	font-weight: 800;
 	font-style: bold;
-}
-
-*, html, body {
-    font-family: 'Proxima Nova Regular', 'Helvetica';
 }
