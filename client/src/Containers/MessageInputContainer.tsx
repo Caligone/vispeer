@@ -21,6 +21,7 @@ export default function MessageInputContainer({ onMessageSend }: MessageInputCon
             isDisabled={wrtcStatus !== CONNECTION_STATUS.CONNECTED}
             onSubmit={(e) => {
                 e.preventDefault();
+                if (currentMessage.length === 0) return;
                 const message = {
                     type: MESSAGE_TYPES.LOCAL,
                     author: nickname,
