@@ -2,11 +2,11 @@ import { h } from 'preact';
 
 import './MessageInput.scss';
 
-type MessageProps = {
+type MessageInputProps = {
     currentMessage: string,
     isDisabled: boolean,
-    onSubmit: (e: h.JSX.TargetedEvent<HTMLFormElement, Event>) => void,
-    onInput: (e: h.JSX.TargetedEvent<HTMLInputElement, Event>) => void,
+    onSubmit: () => void,
+    onInput: (e: h.JSX.TargetedEvent<HTMLTextAreaElement, Event>) => void,
 };
 
 export default function MessageInput({
@@ -14,16 +14,19 @@ export default function MessageInput({
     isDisabled,
     onSubmit,
     onInput,
-}: MessageProps): h.JSX.Element {
+}: MessageInputProps): h.JSX.Element {
     return (
-        <form onSubmit={onSubmit} className="c-message-input-container">
+        <form onSubmit={(e) => {
+            e.preventDefault();
+            onSubmit();
+        }} className="c-message-input-container">
             <label
                 htmlFor="current-message"
                 className="c-message-input-label"
             >
                 Message
             </label>
-            <input
+            <textarea
                 id="current-message"
                 name="current-message"
                 className="c-message-input"
@@ -32,6 +35,12 @@ export default function MessageInput({
                 placeholder={isDisabled ? 'Waiting for your peer...' : 'Type in your message...'}
                 disabled={isDisabled}
                 onInput={onInput}
+                onKeyPress={(e) => {
+                    if(e.which === 13 && !e.shiftKey) {
+                        e.preventDefault();
+                        onSubmit();
+                    }
+                }}
             />
             <button
                 type="submit"

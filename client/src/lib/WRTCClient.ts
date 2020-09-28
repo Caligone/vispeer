@@ -141,7 +141,6 @@ export default class WRTCClient {
             );
         });
         this.peer.on('close', () => {
-
             const disconnectedEventData: WRTCConnectionStatusChangedEventData = {
                 eventName: EVENTS.CONNECTION_STATUS_CHANGED,
                 status: CONNECTION_STATUS.DISCONNECTED,

@@ -8,6 +8,7 @@
     .c-message__content {
         padding: 8px;
         border-radius: 5px;
+        white-space: pre-line;
     }
     &.c-message--local {
         flex-direction: row-reverse;

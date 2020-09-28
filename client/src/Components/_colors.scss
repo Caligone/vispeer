@@ -4,6 +4,12 @@
 $primary: #ffffff;
 $invertedPrimary: #000000;
 
+$secondary: #11a5ed;
+$invertedSecondary: #ffffff;
+
+$tertiary: #e3eaf2;
+$invertedTertiary: #0a0e31;
+
 $textColor: $primary;
 $backgroundColor: $invertedPrimary;
 
@@ -11,12 +17,11 @@ $backgroundColor: $invertedPrimary;
 /*
  *   Messaging variables
  */
-$background: #f4f8fb;
 
 // Remote message
-$remoteMessageBackgroundColor: #e3eaf2;
-$remoteMessageColor: #0a0e31;
+$remoteMessageBackgroundColor: $tertiary;
+$remoteMessageColor: $invertedTertiary;
 
 // Local message
-$localMessageBackgroundColor: #11a5ed;
-$localMessageColor: #ffffff;
+$localMessageBackgroundColor: $secondary;
+$localMessageColor: $invertedSecondary;

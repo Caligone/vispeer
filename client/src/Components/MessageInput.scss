@@ -1,6 +1,6 @@
 @import "colors";
 
-$messageContainerPadding: 10px;
+$messageContainerMargin: 20px;
 $messageInputContainerMargin: 10px;
 
 .c-message-input-container {
@@ -9,11 +9,13 @@ $messageInputContainerMargin: 10px;
     left: 0;
     display: flex;
     align-items: center;
-    width: calc(100vw - #{$messageContainerPadding} * 2);
-    margin: $messageInputContainerMargin;
-    padding: 15px;
+    width: calc(100vw - #{$messageContainerMargin} * 2);
+    margin: $messageContainerMargin;
     box-sizing: border-box;
+    background-color: $backgroundColor;
     .c-message-input {
+        resize: none;
+        height: 40px;
         width: 100%;
         padding: 8px;
         margin-left: 5px;
@@ -22,14 +24,14 @@ $messageInputContainerMargin: 10px;
         font-size: 16px;
     }
     .c-message-input-label {
-        // color: $localMessageColor
+        font-weight: bold;
     }
     .c-message-input-submit {
+        height: 56px;
         border: 0;
         padding: 8px;
         border-radius: 0 3px 3px 0;
-        // color: $localMessageColor;
-        // background-color: $localMessageBackgroundColor;
         font-size: 16px;
+        font-weight: bold;
     }
 }

@@ -1,10 +1,10 @@
 @import "colors";
 
-$topBarHeight: 40px;
-$messageInputHeight: 90px;
+$messageInputHeight: 98px;
 .c-messages-container {
     display: flex;
     flex-direction: column-reverse;
-    height: calc(100vh - #{$topBarHeight} - #{$messageInputHeight});
-    padding: 10px;
+    height: calc(100vh - #{$messageInputHeight});
+    padding: 10px 10px 0 10px;
+    overflow-y: scroll;
 }

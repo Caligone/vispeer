@@ -10,6 +10,7 @@ import { CONNECTION_STATUS } from '../@types/Connections';
 type MessageInputContainerProps = {
     onMessageSend: (message: Message) => void,
 };
+
 export default function MessageInputContainer({ onMessageSend }: MessageInputContainerProps): h.JSX.Element {
     const [currentMessage, setCurrentMessage] = useState('');
     const { nickname } = Messaging.useState();
@@ -19,8 +20,7 @@ export default function MessageInputContainer({ onMessageSend }: MessageInputCon
         <MessageInput
             currentMessage={currentMessage}
             isDisabled={wrtcStatus !== CONNECTION_STATUS.CONNECTED}
-            onSubmit={(e) => {
-                e.preventDefault();
+            onSubmit={() => {
                 if (currentMessage.length === 0) return;
                 const message = {
                     type: MESSAGE_TYPES.LOCAL,
