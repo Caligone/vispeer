@@ -1,8 +1,8 @@
 import Peer from 'simple-peer';
 import {
-    default as WSClient,
-    EVENTS as WS_EVENTS,
- } from './WSClient'
+    default as ServerClient,
+    EVENTS as SERVER_EVENTS,
+ } from './ServerClient'
 import * as Messages from '../Messages';
 import EventEmitter, { EventData } from './EventEmitter';
 import { CONNECTION_STATUS } from '../@types/Connections';
@@ -10,58 +10,58 @@ import { CONNECTION_STATUS } from '../@types/Connections';
 export enum EVENTS {
     ROOM_JOINED = 'roomJoined',
     ROOM_LEFT = 'roomLeft',
-    CONNECTION_STATUS_CHANGED = 'connectionStatusChanged',
-    WS_CONNECTION_STATUS_CHANGED = 'wsConnectionStatusChanged',
+    CONNECTION_STATUS_CHANGED = 'peerConnectionStatusChanged',
+    SERVER_CONNECTION_STATUS_CHANGED = 'serverConnectionStatusChanged',
     TEXT_MESSAGE = 'textMessage',
 }
 
-export interface WRTCConnectionStatusChangedEventData extends EventData {
+export interface PeerConnectionStatusChangedEventData extends EventData {
     status: CONNECTION_STATUS,
 }
 export interface RoomJoinedEventData extends EventData, Messages.RoomJoined {}
 export interface RoomLeftEventData extends EventData, Messages.RoomLeft {}
 export interface PeerSignalEventData extends EventData, Peer.SignalData {}
 
-export default class WRTCClient {
+export default class PeerClient {
     
     protected eventEmitter: EventEmitter;
 
-    wsClient: WSClient;
+    serverClient: ServerClient;
     peer: Peer.Instance | null = null;
     isInitiator = false;
     peerConnected = false;
 
     constructor() {
         this.eventEmitter = new EventEmitter();
-        this.wsClient = new WSClient();
-        this.wsClient.addEventListener(
-            WS_EVENTS.CONNECTION_STATUS_CHANGED,
-            this.onWSConnectionStatusChanged.bind(this),
+        this.serverClient = new ServerClient();
+        this.serverClient.addEventListener(
+            SERVER_EVENTS.CONNECTION_STATUS_CHANGED,
+            this.onServerConnectionStatusChanged.bind(this),
         );
-        this.wsClient.addEventListener(
-            WS_EVENTS.ROOM_JOINED,
+        this.serverClient.addEventListener(
+            SERVER_EVENTS.ROOM_JOINED,
             this.onRoomJoined.bind(this),
         );
-        this.wsClient.addEventListener(
-            WS_EVENTS.ROOM_LEFT,
+        this.serverClient.addEventListener(
+            SERVER_EVENTS.ROOM_LEFT,
             this.onRoomLeft.bind(this),
         );
-        this.wsClient.addEventListener(
-            WS_EVENTS.PEER_SIGNAL,
+        this.serverClient.addEventListener(
+            SERVER_EVENTS.PEER_SIGNAL,
             this.onPeerSignal.bind(this),
         );
     }
 
     public setNickname(nickname: string): void {
-        this.wsClient.setNickname(nickname);
+        this.serverClient.setNickname(nickname);
     }
     
     public getNickname(): string {
-        return this.wsClient.getNickname();
+        return this.serverClient.getNickname();
     }
 
     public setRoomName(roomName: string): void {
-        this.wsClient.setRoomName(roomName);
+        this.serverClient.setRoomName(roomName);
     }
 
     public addEventListener(eventName: EVENTS, listener: (data: EventData) => void): void {
@@ -73,21 +73,21 @@ export default class WRTCClient {
     }
 
     public connect(serverURL: string): Promise<void> {
-        return this.wsClient.connect(serverURL);
+        return this.serverClient.connect(serverURL);
     }
 
     public sendTextMessage(content: string): void {
         const textMessage: Messages.TextMessage = {
-            author: this.wsClient.getNickname(),
+            author: this.serverClient.getNickname(),
             content,
             date: Date.now()
         };
         this.peer?.send(JSON.stringify(textMessage));
     }
 
-    protected onWSConnectionStatusChanged(eventData: EventData): void {
+    protected onServerConnectionStatusChanged(eventData: EventData): void {
         this.eventEmitter.dispatchEvent(
-            EVENTS.WS_CONNECTION_STATUS_CHANGED,
+            EVENTS.SERVER_CONNECTION_STATUS_CHANGED,
             eventData,
         );
     }
@@ -98,7 +98,7 @@ export default class WRTCClient {
 
     onRoomJoined(rawMessage: EventData): void {
         const message = rawMessage as RoomJoinedEventData;
-        const ownAck = message.nickname === this.wsClient.getNickname();
+        const ownAck = message.nickname === this.serverClient.getNickname();
         this.eventEmitter.dispatchEvent(
             EVENTS.ROOM_JOINED,
             message,
@@ -114,7 +114,7 @@ export default class WRTCClient {
         // The initiator wait the second join to initiate the connection
         if (!ownAck && (this.peer || !this.isInitiator)) return;
 
-        const eventData: WRTCConnectionStatusChangedEventData = {
+        const eventData: PeerConnectionStatusChangedEventData = {
             eventName: EVENTS.CONNECTION_STATUS_CHANGED,
             status: CONNECTION_STATUS.CONNECTING,
         };
@@ -127,11 +127,11 @@ export default class WRTCClient {
             objectMode: true,
         });
         this.peer.on('signal', (signal) => {
-            this.wsClient.sendSignal(signal);
+            this.serverClient.sendSignal(signal);
         });
         this.peer.on('connect', () => { 
-            this.wsClient.close(); 
-            const connectedEventData: WRTCConnectionStatusChangedEventData = {
+            this.serverClient.close(); 
+            const connectedEventData: PeerConnectionStatusChangedEventData = {
                 eventName: EVENTS.CONNECTION_STATUS_CHANGED,
                 status: CONNECTION_STATUS.CONNECTED,
             };
@@ -141,7 +141,7 @@ export default class WRTCClient {
             );
         });
         this.peer.on('close', () => {
-            const disconnectedEventData: WRTCConnectionStatusChangedEventData = {
+            const disconnectedEventData: PeerConnectionStatusChangedEventData = {
                 eventName: EVENTS.CONNECTION_STATUS_CHANGED,
                 status: CONNECTION_STATUS.DISCONNECTED,
             };
@@ -169,5 +169,4 @@ export default class WRTCClient {
             message,
         );
     }
-
 }

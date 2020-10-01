@@ -1,19 +1,22 @@
 import { h } from 'preact';
 import { Router, Route } from 'preact-router';
 
-import * as Messaging from './Hooks/MessagingModule';
-import * as Connections from './Hooks/ConnectionsModule';
+import { Provider as MessagingProvider } from './Hooks/MessagingContext';
+import { Provider as ConnectionsProvider } from './Hooks/ConnectionsContext';
+import { Provider as PeerClientProvider } from './Hooks/PeerClientContext';
 
 import HomePage from './Pages/HomePage';
 import JoinPage from './Pages/JoinPage';
 
-function Providers({ children }: { children: Array<h.JSX.Element> | h.JSX.Element }): h.JSX.Element {
+function Providers({ children }: h.JSX.ElementChildrenAttribute): h.JSX.Element {
     return (
-        <Messaging.Provider>
-            <Connections.Provider>
-                {children}
-            </Connections.Provider>
-        </Messaging.Provider>
+        <MessagingProvider>
+            <ConnectionsProvider>
+                <PeerClientProvider>
+                    {children}
+                </PeerClientProvider>
+            </ConnectionsProvider>
+        </MessagingProvider>
     );
 }
 

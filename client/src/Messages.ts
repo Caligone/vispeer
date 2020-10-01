@@ -11,7 +11,7 @@ export const NAMES = {
 };
 
 /*
- * WS MESSAGES
+ * SERVER MESSAGES
  */
 export interface RoomJoin {
     roomName: string
@@ -32,7 +32,7 @@ export interface RoomLeft {
 export interface RoomLeftEventData extends RoomLeft, EventData {}
 
 /*
- * WRTC MESSAGES
+ * PEER MESSAGES
  */
 export interface TextMessage {
     author: string

@@ -10,11 +10,11 @@ export enum EVENTS {
     CONNECTION_STATUS_CHANGED = 'connectionStatusChanged',
 }
 
-interface WSConnectionStatusChangedEventData extends EventData {
+interface ServerConnectionStatusChangedEventData extends EventData {
     status: CONNECTION_STATUS,
 }
 
-export default class WSClient {
+export default class ServerClient {
 
     protected eventEmitter: EventEmitter;
 
@@ -50,7 +50,7 @@ export default class WSClient {
 
     public connect(serverURL: string): Promise<void> {
         this.url = serverURL;
-        const eventData: WSConnectionStatusChangedEventData = {
+        const eventData: ServerConnectionStatusChangedEventData = {
             eventName: EVENTS.CONNECTION_STATUS_CHANGED,
             status: CONNECTION_STATUS.CONNECTING,
         }
@@ -110,7 +110,7 @@ export default class WSClient {
      */
 
     protected onConnect(): void {
-        const eventData: WSConnectionStatusChangedEventData = {
+        const eventData: ServerConnectionStatusChangedEventData = {
             eventName: EVENTS.CONNECTION_STATUS_CHANGED,
             status: CONNECTION_STATUS.CONNECTED,
         }
@@ -121,7 +121,7 @@ export default class WSClient {
     }
 
     protected onClose(): void {
-        const eventData: WSConnectionStatusChangedEventData = {
+        const eventData: ServerConnectionStatusChangedEventData = {
             eventName: EVENTS.CONNECTION_STATUS_CHANGED,
             status: CONNECTION_STATUS.DISCONNECTED,
         }

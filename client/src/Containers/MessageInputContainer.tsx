@@ -3,8 +3,8 @@ import { useState } from 'preact/hooks';
 import { Message, MESSAGE_TYPES } from '../@types/Messaging';
 import MessageInput from '../Components/MessageInput';
 
-import * as Messaging from '../Hooks/MessagingModule';
-import * as Connections from '../Hooks/ConnectionsModule';
+import useMessaging from '../Hooks/MessagingContext';
+import useConnections from '../Hooks/ConnectionsContext';
 import { CONNECTION_STATUS } from '../@types/Connections';
 
 type MessageInputContainerProps = {
@@ -13,13 +13,12 @@ type MessageInputContainerProps = {
 
 export default function MessageInputContainer({ onMessageSend }: MessageInputContainerProps): h.JSX.Element {
     const [currentMessage, setCurrentMessage] = useState('');
-    const { nickname } = Messaging.useState();
-    const { wrtcStatus } = Connections.useState();
-    const messagingDispatch = Messaging.useDispatch();
+    const { nickname, addMessage } = useMessaging();
+    const { peerConnectionStatus } = useConnections();
     return (
         <MessageInput
             currentMessage={currentMessage}
-            isDisabled={wrtcStatus !== CONNECTION_STATUS.CONNECTED}
+            isDisabled={peerConnectionStatus !== CONNECTION_STATUS.CONNECTED}
             onSubmit={() => {
                 if (currentMessage.length === 0) return;
                 const message = {
@@ -28,7 +27,7 @@ export default function MessageInputContainer({ onMessageSend }: MessageInputCon
                     content: currentMessage,
                     date: Date.now(),
                 };
-                messagingDispatch(Messaging.addMessage(message));
+                addMessage(message);
                 onMessageSend(message);
                 setCurrentMessage('');
             }}
