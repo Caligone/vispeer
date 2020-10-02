@@ -7,7 +7,7 @@ import usePeerClient from '../Hooks/PeerClientContext';
 import { CONNECTION_STATUS } from '../@types/Connections';
 
 import Button, { Color, NodeType } from '../Components/Button';
-import { FlexContainer } from '../Components/Utilities';
+import { FlexContainer, FlexDirection } from '../Components/Utilities';
 
 export default function ConnectionFormContainer(): h.JSX.Element | null {
     const { serverConnectionStatus, serverUrl } = useConnections();
@@ -18,12 +18,13 @@ export default function ConnectionFormContainer(): h.JSX.Element | null {
     
     return (
         <FlexContainer
+            direction={FlexDirection.ROW}
             verticalCenter
             horizontalCenter
             className='u-width__full u-height__full u-text__center'
         >
             <div>
-                <h1>{roomName}</h1>
+                <h1>Ready to join <em>{roomName}</em></h1>
                 <form onSubmit={(e) => {
                     e.preventDefault();
                     peerClient.connect(serverUrl);

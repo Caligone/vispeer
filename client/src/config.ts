@@ -1,3 +1,3 @@
 export default {
-    appName: "Whisper"
+    appName: "Vispeer"
 };

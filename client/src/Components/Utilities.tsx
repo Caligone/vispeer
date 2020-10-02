@@ -10,18 +10,26 @@ export const enum Size {
     MEDIUM = 'medium',
     LARGE = 'large',
 }
+export const enum FlexDirection {
+    ROW = 'row',
+    ROW_REVERSE = 'row-reverse',
+    COLUMN = 'column',
+    COLUMN_REVERSE = 'column-reverse',
+}
 
 type FlexContainerProps = {
     children: Children
     verticalCenter: boolean | undefined
     horizontalCenter: boolean | undefined
     className: ClassName
+    direction: FlexDirection
 };
-export function FlexContainer({ children, verticalCenter, horizontalCenter, className }: FlexContainerProps): h.JSX.Element {
+export function FlexContainer({ children, verticalCenter, horizontalCenter, className, direction }: FlexContainerProps): h.JSX.Element {
     const classNames = [
         'c-flex-container',
         verticalCenter ? 'c-flex-container__v-center' : '',
         horizontalCenter ? 'c-flex-container__h-center': '',
+        direction ? `c-flex-container__direction-${direction}` : '',
         className,
     ];
     return (
@@ -33,14 +41,16 @@ export function FlexContainer({ children, verticalCenter, horizontalCenter, clas
 
 type LogoProps = {
     size: Size
+    className: ClassName
 }
-export function Logo({ size }: LogoProps): h.JSX.Element {
+export function Logo({ size, className, ...props }: LogoProps): h.JSX.Element {
     const classNames = [
         'c-logo',
         size ? `c-logo__size-${size}` : 'c-logo__size-medium',
+        className,
     ];
     return (
-        <div className={classNames.join(' ')}>
+        <div className={classNames.join(' ')} {...props}>
             <svg preserveAspectRatio="xMidYMid meet" viewBox="0 0 103 103" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M30.6197 82.3759L22.3897 89.8343C20.868 91.2134 20 93.1714 20 95.225C20 99.2429 23.2571 102.5 27.275 102.5H75.6772C79.7215 102.5 83 99.2215 83 95.1772C83 93.1503 82.1599 91.2141 80.6798 89.8295L73.0711 82.7117C61.1632 71.572 42.7024 71.426 30.6197 82.3759Z" fill="white"/>
                 <path d="M72.3803 20.1241L80.6103 12.6657C82.132 11.2866 83 9.32862 83 7.27499C83 3.25712 79.7429 0 75.725 0H27.3228C23.2785 0 20 3.27855 20 7.32284C20 9.34967 20.8401 11.2859 22.3202 12.6705L29.9289 19.7883C41.8368 30.928 60.2976 31.074 72.3803 20.1241Z" fill="white"/>
