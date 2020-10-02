@@ -13,14 +13,13 @@ export enum EVENTS {
     CONNECTION_STATUS_CHANGED = 'peerConnectionStatusChanged',
     SERVER_CONNECTION_STATUS_CHANGED = 'serverConnectionStatusChanged',
     TEXT_MESSAGE = 'textMessage',
+    REMOTE_STREAM_CHANGED = 'remoteStreamChanged',
+    LOCAL_STREAM_CHANGED = 'localStreamChanged',
 }
 
 export interface PeerConnectionStatusChangedEventData extends EventData {
     status: CONNECTION_STATUS,
 }
-export interface RoomJoinedEventData extends EventData, Messages.RoomJoined {}
-export interface RoomLeftEventData extends EventData, Messages.RoomLeft {}
-export interface PeerSignalEventData extends EventData, Peer.SignalData {}
 
 export default class PeerClient {
     
@@ -30,6 +29,9 @@ export default class PeerClient {
     peer: Peer.Instance | null = null;
     isInitiator = false;
     peerConnected = false;
+    
+    localStream: MediaStream | null = null;
+    remoteStream: MediaStream | null = null;
 
     constructor() {
         this.eventEmitter = new EventEmitter();
@@ -78,11 +80,20 @@ export default class PeerClient {
 
     public sendTextMessage(content: string): void {
         const textMessage: Messages.TextMessage = {
+            type: Messages.PEER_MESSAGE_TYPE.TEXT_MESSAGE,
             author: this.serverClient.getNickname(),
             content,
             date: Date.now()
         };
         this.peer?.send(JSON.stringify(textMessage));
+    }
+
+    protected sendSignal(data: Peer.SignalData): void {
+        const signalMessage: Messages.PeerSignal = {
+            type: Messages.PEER_MESSAGE_TYPE.SIGNAL,
+            data,
+        };
+        this.peer?.send(JSON.stringify(signalMessage));
     }
 
     protected onServerConnectionStatusChanged(eventData: EventData): void {
@@ -92,12 +103,12 @@ export default class PeerClient {
         );
     }
 
-    onPeerSignal(signal: PeerSignalEventData): void {
+    onPeerSignal(signal: Messages.PeerSignalEventData): void {
         this.peer?.signal(signal);
     }
 
     onRoomJoined(rawMessage: EventData): void {
-        const message = rawMessage as RoomJoinedEventData;
+        const message = rawMessage as Messages.RoomJoinedEventData;
         const ownAck = message.nickname === this.serverClient.getNickname();
         this.eventEmitter.dispatchEvent(
             EVENTS.ROOM_JOINED,
@@ -127,10 +138,15 @@ export default class PeerClient {
             objectMode: true,
         });
         this.peer.on('signal', (signal) => {
-            this.serverClient.sendSignal(signal);
+            if (this.peerConnected) {
+                this.sendSignal(signal);
+            } else {
+                this.serverClient.sendSignal(signal);
+            }
         });
         this.peer.on('connect', () => { 
             this.serverClient.close(); 
+            this.peerConnected = true;
             const connectedEventData: PeerConnectionStatusChangedEventData = {
                 eventName: EVENTS.CONNECTION_STATUS_CHANGED,
                 status: CONNECTION_STATUS.CONNECTED,
@@ -141,6 +157,7 @@ export default class PeerClient {
             );
         });
         this.peer.on('close', () => {
+            this.peerConnected = false;
             const disconnectedEventData: PeerConnectionStatusChangedEventData = {
                 eventName: EVENTS.CONNECTION_STATUS_CHANGED,
                 status: CONNECTION_STATUS.DISCONNECTED,
@@ -150,23 +167,59 @@ export default class PeerClient {
                 disconnectedEventData,
             );
         });
+        this.peer.on('stream', (stream) => {
+            this.remoteStream = stream;
+            this.eventEmitter.dispatchEvent(
+                EVENTS.REMOTE_STREAM_CHANGED,
+                { stream } as Messages.RemoteStreamChangedEventData,
+            );
+        });
         this.peer.on('data', (content) => {
+            let message = null;
             try {
-                this.eventEmitter.dispatchEvent(
-                    EVENTS.TEXT_MESSAGE,
-                    JSON.parse(content),
-                );
+                message = JSON.parse(content);
             } catch (e) {
                 throw new Error(`Can not parse message '${content}'`);
+            }
+            switch (message.type) {
+                case Messages.PEER_MESSAGE_TYPE.TEXT_MESSAGE:
+                    this.eventEmitter.dispatchEvent(
+                        EVENTS.TEXT_MESSAGE,
+                        message,
+                    );
+                    break;
+                case Messages.PEER_MESSAGE_TYPE.SIGNAL:
+                    this.peer?.signal(message.data);
+                    break;
             }
         });
     }
 
     onRoomLeft(rawMessage: EventData): void {
-        const message = rawMessage as RoomLeftEventData;
+        const message = rawMessage as Messages.RoomLeftEventData;
         this.eventEmitter.dispatchEvent(
             EVENTS.ROOM_LEFT,
             message,
+        );
+    }
+
+    async addAudioStream(): Promise<void> {
+        this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        this.eventEmitter.dispatchEvent(
+            EVENTS.LOCAL_STREAM_CHANGED,
+            { stream: this.localStream } as Messages.LocalStreamChangedEventData,
+        );
+        this.peer?.addStream(this.localStream);
+    }
+
+    async removeAudioStream(): Promise<void> {
+        if (!this.localStream) return;
+        this.peer?.removeStream(this.localStream);
+        this.localStream.getTracks().forEach(track => track.stop());
+        this.localStream = null;
+        this.eventEmitter.dispatchEvent(
+            EVENTS.LOCAL_STREAM_CHANGED,
+            { stream: null } as Messages.LocalStreamChangedEventData,
         );
     }
 }

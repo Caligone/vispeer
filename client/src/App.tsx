@@ -26,7 +26,6 @@ export default function App(): h.JSX.Element {
             <Router>
                 <Route path="/" component={HomePage} />
                 <Route path="/join/:roomName" component={JoinPage} />
-                {/* <Search path="/search/:query/:advanced?" /> */}
                 <Route default component={() => (<h1>Not found</h1>)} />
             </Router>
         </Providers>

@@ -34,11 +34,29 @@ export interface RoomLeftEventData extends RoomLeft, EventData {}
 /*
  * PEER MESSAGES
  */
-export interface TextMessage {
+export const enum PEER_MESSAGE_TYPE {
+    SIGNAL = 'signal',
+    TEXT_MESSAGE = 'text_message',
+}
+export interface PeerMessage {
+    type: PEER_MESSAGE_TYPE
+}
+export interface TextMessage extends PeerMessage {
+    type: PEER_MESSAGE_TYPE.TEXT_MESSAGE,
     author: string
     content: string
     date: number
 }
+export interface PeerSignal extends PeerMessage {
+    type: PEER_MESSAGE_TYPE.SIGNAL,
+    data: SimplePeer.SignalData,
+}
 export interface TextMessageEventData extends TextMessage, EventData {}
 
 export interface PeerSignalEventData extends SimplePeer.SignalData, EventData {}
+export interface RemoteStreamChangedEventData extends EventData {
+    stream: MediaStream | null
+}
+export interface LocalStreamChangedEventData extends EventData {
+    stream: MediaStream | null
+}
