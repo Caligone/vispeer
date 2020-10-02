@@ -96,6 +96,13 @@ export default class PeerClient {
         this.peer?.send(JSON.stringify(signalMessage));
     }
 
+    protected sendCloseAudioStream(): void {
+        const signalMessage: Messages.CloseAudioStream = {
+            type: Messages.PEER_MESSAGE_TYPE.CLOSE_AUDIO_STREAM,
+        };
+        this.peer?.send(JSON.stringify(signalMessage));
+    }
+
     protected onServerConnectionStatusChanged(eventData: EventData): void {
         this.eventEmitter.dispatchEvent(
             EVENTS.SERVER_CONNECTION_STATUS_CHANGED,
@@ -188,6 +195,13 @@ export default class PeerClient {
                         message,
                     );
                     break;
+                case Messages.PEER_MESSAGE_TYPE.CLOSE_AUDIO_STREAM:
+                    // Faking peer.on('stream') on close
+                    this.eventEmitter.dispatchEvent(
+                        EVENTS.REMOTE_STREAM_CHANGED,
+                        { ...message, stream: null, },
+                    );
+                    break;
                 case Messages.PEER_MESSAGE_TYPE.SIGNAL:
                     this.peer?.signal(message.data);
                     break;
@@ -217,6 +231,7 @@ export default class PeerClient {
         this.peer?.removeStream(this.localStream);
         this.localStream.getTracks().forEach(track => track.stop());
         this.localStream = null;
+        this.sendCloseAudioStream();
         this.eventEmitter.dispatchEvent(
             EVENTS.LOCAL_STREAM_CHANGED,
             { stream: null } as Messages.LocalStreamChangedEventData,

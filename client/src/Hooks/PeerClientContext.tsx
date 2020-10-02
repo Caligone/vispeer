@@ -80,12 +80,27 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
     function onRemoteStreamChanged(data: EventData) {
         const { stream } = data as Messages.RemoteStreamChangedEventData;
         setRemoteStream(stream);
+        addMessage({
+            type: MESSAGE_TYPES.INTERNAL,
+            author: 'Internal',
+            content: stream !== null 
+                ? 'Your peer started streaming audio'
+                : 'Your peer stopped streaming audio',
+            date: Date.now(),
+        });
     }
 
     function onLocalStreamChanged(data: EventData) {
-        console.log('onLocalStreamChanged');
         const { stream } = data as Messages.LocalStreamChangedEventData;
         setLocalStream(stream);
+        addMessage({
+            type: MESSAGE_TYPES.INTERNAL,
+            author: 'Internal',
+            content: stream !== null 
+                ? 'You started streaming audio'
+                : 'You stopped streaming audio',
+            date: Date.now(),
+        });
     }
 
     useEffect(() => {

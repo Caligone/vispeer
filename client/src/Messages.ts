@@ -37,6 +37,7 @@ export interface RoomLeftEventData extends RoomLeft, EventData {}
 export const enum PEER_MESSAGE_TYPE {
     SIGNAL = 'signal',
     TEXT_MESSAGE = 'text_message',
+    CLOSE_AUDIO_STREAM = 'close_audio_stream',
 }
 export interface PeerMessage {
     type: PEER_MESSAGE_TYPE
@@ -50,6 +51,9 @@ export interface TextMessage extends PeerMessage {
 export interface PeerSignal extends PeerMessage {
     type: PEER_MESSAGE_TYPE.SIGNAL,
     data: SimplePeer.SignalData,
+}
+export interface CloseAudioStream extends PeerMessage {
+    type: PEER_MESSAGE_TYPE.CLOSE_AUDIO_STREAM,
 }
 export interface TextMessageEventData extends TextMessage, EventData {}
 
