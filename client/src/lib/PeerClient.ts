@@ -31,6 +31,7 @@ export default class PeerClient {
     
     protected eventEmitter: EventEmitter;
 
+    serverURL: string | null = null;
     serverClient: ServerClient;
     peer: Peer.Instance | null = null;
     isInitiator = false;
@@ -81,7 +82,8 @@ export default class PeerClient {
     }
 
     public connect(serverURL: string): Promise<void> {
-        return this.serverClient.connect(serverURL);
+        this.serverURL = serverURL;
+        return this.serverClient.connect(this.serverURL);
     }
 
     public sendTextMessage(content: string): void {
@@ -177,6 +179,25 @@ export default class PeerClient {
             );
         });
         this.peer.on('close', () => {
+            this.peer?.destroy();
+            this.peer = null;
+            this.peerConnected = false;
+            if (this.serverURL) {
+                this.serverClient.connect(this.serverURL);
+            }
+            const disconnectedEventData: PeerConnectionStatusChangedEventData = {
+                eventName: EVENTS.CONNECTION_STATUS_CHANGED,
+                status: CONNECTION_STATUS.DISCONNECTED,
+            };
+            this.eventEmitter.dispatchEvent(
+                EVENTS.CONNECTION_STATUS_CHANGED,
+                disconnectedEventData,
+            );
+        });
+        this.peer.on('error', (error) => {
+            console.error(error);
+            this.peer?.destroy(error);
+            this.peer = null;
             this.peerConnected = false;
             const disconnectedEventData: PeerConnectionStatusChangedEventData = {
                 eventName: EVENTS.CONNECTION_STATUS_CHANGED,
@@ -189,10 +210,6 @@ export default class PeerClient {
         });
         this.peer.on('stream', (stream) => {
             this.remoteStream = stream;
-            // this.eventEmitter.dispatchEvent(
-            //     EVENTS.REMOTE_STREAM_CHANGED,
-            //     { stream } as Messages.RemoteStreamChangedEventData,
-            // );
         });
         this.peer.on('track', (track: MediaStreamTrack, stream: MediaStream) => {
             if (!this.remoteStream) {
