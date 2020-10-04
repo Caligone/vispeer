@@ -12,10 +12,10 @@ import { CONNECTION_STATUS } from '../@types/Connections';
 import { Message } from '../@types/Messaging';
 
 export default function MessagingContainer(): h.JSX.Element | null {
-    const { serverConnectionStatus } = useConnections();
+    const { peerConnectionStatus } = useConnections();
     const { messages } = useMessaging();
     const { peerClient } = usePeerClient();
-    if (serverConnectionStatus === CONNECTION_STATUS.IDLE) return null;
+    if (peerConnectionStatus !== CONNECTION_STATUS.CONNECTED) return null;
     return (
         <div>
             <MessagingOptions />
