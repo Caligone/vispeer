@@ -13,8 +13,14 @@ export enum EVENTS {
     CONNECTION_STATUS_CHANGED = 'peerConnectionStatusChanged',
     SERVER_CONNECTION_STATUS_CHANGED = 'serverConnectionStatusChanged',
     TEXT_MESSAGE = 'textMessage',
-    REMOTE_STREAM_CHANGED = 'remoteStreamChanged',
-    LOCAL_STREAM_CHANGED = 'localStreamChanged',
+    REMOTE_AUDIO_ADDED = 'remoteAudioAdded',
+    REMOTE_AUDIO_REMOVED = 'remoteAudioRemoved',
+    REMOTE_VIDEO_ADDED = 'remoteVideoAdded',
+    REMOTE_VIDEO_REMOVED = 'remoteVideoRemoved',
+    LOCAL_AUDIO_ADDED = 'localAudioAdded',
+    LOCAL_AUDIO_REMOVED = 'localAudioRemoved',
+    LOCAL_VIDEO_ADDED = 'localVideoAdded',
+    LOCAL_VIDEO_REMOVED = 'localVideoRemoved',
 }
 
 export interface PeerConnectionStatusChangedEventData extends EventData {
@@ -98,7 +104,14 @@ export default class PeerClient {
 
     protected sendCloseAudioStream(): void {
         const signalMessage: Messages.CloseAudioStream = {
-            type: Messages.PEER_MESSAGE_TYPE.CLOSE_AUDIO_STREAM,
+            type: Messages.PEER_MESSAGE_TYPE.REMOTE_AUDIO_REMOVED,
+        };
+        this.peer?.send(JSON.stringify(signalMessage));
+    }
+
+    protected sendCloseVideoStream(): void {
+        const signalMessage: Messages.CloseVideoStream = {
+            type: Messages.PEER_MESSAGE_TYPE.REMOTE_VIDEO_REMOVED,
         };
         this.peer?.send(JSON.stringify(signalMessage));
     }
@@ -176,10 +189,33 @@ export default class PeerClient {
         });
         this.peer.on('stream', (stream) => {
             this.remoteStream = stream;
-            this.eventEmitter.dispatchEvent(
-                EVENTS.REMOTE_STREAM_CHANGED,
-                { stream } as Messages.RemoteStreamChangedEventData,
-            );
+            // this.eventEmitter.dispatchEvent(
+            //     EVENTS.REMOTE_STREAM_CHANGED,
+            //     { stream } as Messages.RemoteStreamChangedEventData,
+            // );
+        });
+        this.peer.on('track', (track: MediaStreamTrack, stream: MediaStream) => {
+            if (!this.remoteStream) {
+                this.remoteStream = stream;
+            }
+            this.remoteStream.addTrack(track);
+            if (track.kind === 'audio') {
+                this.eventEmitter.dispatchEvent(
+                    EVENTS.REMOTE_AUDIO_ADDED,
+                    {
+                        eventName: Messages.PEER_MESSAGE_TYPE.REMOTE_AUDIO_ADDED,
+                        stream: this.remoteStream,
+                    } as Messages.RemoteStreamChangedEventData,
+                );
+            } else {
+                this.eventEmitter.dispatchEvent(
+                    EVENTS.REMOTE_VIDEO_ADDED,
+                    {
+                        eventName: Messages.PEER_MESSAGE_TYPE.REMOTE_VIDEO_ADDED,
+                        stream: this.remoteStream,
+                    } as Messages.RemoteStreamChangedEventData,
+                );
+            }
         });
         this.peer.on('data', (content) => {
             let message = null;
@@ -195,11 +231,26 @@ export default class PeerClient {
                         message,
                     );
                     break;
-                case Messages.PEER_MESSAGE_TYPE.CLOSE_AUDIO_STREAM:
+                case Messages.PEER_MESSAGE_TYPE.REMOTE_AUDIO_REMOVED:
                     // Faking peer.on('stream') on close
                     this.eventEmitter.dispatchEvent(
-                        EVENTS.REMOTE_STREAM_CHANGED,
-                        { ...message, stream: null, },
+                        EVENTS.REMOTE_AUDIO_REMOVED,
+                        {
+                            ...message,
+                            eventName: Messages.PEER_MESSAGE_TYPE.REMOTE_AUDIO_REMOVED,
+                            stream: null,
+                        },
+                    );
+                    break;
+                case Messages.PEER_MESSAGE_TYPE.REMOTE_VIDEO_REMOVED:
+                    // Faking peer.on('stream') on close
+                    this.eventEmitter.dispatchEvent(
+                        EVENTS.REMOTE_VIDEO_REMOVED,
+                        {
+                            ...message,
+                            eventName: Messages.PEER_MESSAGE_TYPE.REMOTE_VIDEO_REMOVED,
+                            stream: null,
+                        },
                     );
                     break;
                 case Messages.PEER_MESSAGE_TYPE.SIGNAL:
@@ -217,24 +268,93 @@ export default class PeerClient {
         );
     }
 
-    async addAudioStream(): Promise<void> {
-        this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        this.eventEmitter.dispatchEvent(
-            EVENTS.LOCAL_STREAM_CHANGED,
-            { stream: this.localStream } as Messages.LocalStreamChangedEventData,
-        );
+    protected async addStream(): Promise<void> {
+        this.localStream = new MediaStream();
         this.peer?.addStream(this.localStream);
+    }
+
+    protected async removeStream(): Promise<void> {
+        if (!this.localStream) return;
+        this.peer?.removeStream(this.localStream);
+        this.localStream = null;
+    }
+
+    async addTrackToLocalStream(track: MediaStreamTrack): Promise<void> {
+        if (!this.localStream) return;
+        this.localStream.addTrack(track);
+        this.peer?.addTrack(track, this.localStream);
+    }
+
+    async removeTrackFromLocalStream(track: MediaStreamTrack): Promise<void> {
+        if (!this.localStream) return;
+        this.peer?.removeTrack(track, this.localStream);
+        track.stop();
+        this.localStream.removeTrack(track);
+        if (this.localStream.getTracks().length === 0) {
+            this.removeStream();
+        }
+    }
+
+    async addAudioStream(): Promise<void> {
+        const alreadyHasVideoTracks = (this.localStream && this.localStream.getVideoTracks().length > 0) ?? false;
+        if (!alreadyHasVideoTracks) {
+            this.addStream();
+        }
+        const newStream = await navigator.mediaDevices.getUserMedia({
+            video: alreadyHasVideoTracks,
+            audio: true,
+        });
+        newStream.getAudioTracks().forEach(this.addTrackToLocalStream, this);
+        this.eventEmitter.dispatchEvent(
+            EVENTS.LOCAL_AUDIO_ADDED,
+            {
+                eventName: Messages.PEER_MESSAGE_TYPE.LOCAL_AUDIO_ADDED,
+                stream: this.localStream,
+            } as Messages.LocalStreamChangedEventData,
+        );
     }
 
     async removeAudioStream(): Promise<void> {
         if (!this.localStream) return;
-        this.peer?.removeStream(this.localStream);
-        this.localStream.getTracks().forEach(track => track.stop());
-        this.localStream = null;
+        this.localStream.getAudioTracks().forEach(this.removeTrackFromLocalStream, this);
         this.sendCloseAudioStream();
         this.eventEmitter.dispatchEvent(
-            EVENTS.LOCAL_STREAM_CHANGED,
-            { stream: null } as Messages.LocalStreamChangedEventData,
+            EVENTS.LOCAL_AUDIO_REMOVED,
+            {
+                eventName: Messages.PEER_MESSAGE_TYPE.LOCAL_AUDIO_REMOVED,
+                stream: this.localStream,
+            } as Messages.LocalStreamChangedEventData,
+        );
+    }
+    async addVideoStream(): Promise<void> {
+        const alreadyHasAudioTracks = (this.localStream && this.localStream.getAudioTracks().length > 0) ?? false;
+        if (!alreadyHasAudioTracks) {
+            this.addStream();
+        }
+        const newStream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: (this.localStream && this.localStream.getAudioTracks().length > 0) ?? false,
+        });
+        newStream.getVideoTracks().forEach(this.addTrackToLocalStream, this);
+        this.eventEmitter.dispatchEvent(
+            EVENTS.LOCAL_VIDEO_ADDED,
+            { 
+                eventName: Messages.PEER_MESSAGE_TYPE.LOCAL_VIDEO_ADDED,
+                stream: this.localStream,
+            } as Messages.LocalStreamChangedEventData,
+        );
+    }
+
+    async removeVideoStream(): Promise<void> {
+        if (!this.localStream) return;
+        this.localStream.getVideoTracks().forEach(this.removeTrackFromLocalStream, this);
+        this.sendCloseVideoStream();
+        this.eventEmitter.dispatchEvent(
+            EVENTS.LOCAL_VIDEO_REMOVED,
+            { 
+                eventName: Messages.PEER_MESSAGE_TYPE.LOCAL_VIDEO_REMOVED,
+                stream: this.localStream,
+            } as Messages.LocalStreamChangedEventData,
         );
     }
 }

@@ -11,19 +11,26 @@ export default function MessagingOptions(): h.JSX.Element | null {
     const { peerClient, remoteStream, localStream } = usePeerClient();
     if (peerConnectionStatus !== CONNECTION_STATUS.CONNECTED) return null;
 
-    let audioRef: HTMLAudioElement | null = null;
+    let videoRef: HTMLAudioElement | null = null;
     useEffect(() => {
-        if (!remoteStream || !audioRef) return;
-        audioRef.srcObject = remoteStream;
+        if (!videoRef) return;
+        videoRef.srcObject = remoteStream;
     }, [remoteStream])
+    const hasAudioTrack = localStream !== null && localStream.getAudioTracks().length > 0;
+    const hasVideoTrack = localStream !== null && localStream.getVideoTracks().length > 0;
     return (
         <div style={{ position: 'absolute' }}>
             {
-                localStream !== null
+                hasAudioTrack
                 ? <a onClick={() => peerClient.removeAudioStream()}>Close audio channel</a>
                 : <a onClick={() => peerClient.addAudioStream()}>Open audio channel</a>
             }
-            <audio ref={(ref) => audioRef = ref } autoPlay />
+            {
+                hasVideoTrack
+                ? <a onClick={() => peerClient.removeVideoStream()}>Close video channel</a>
+                : <a onClick={() => peerClient.addVideoStream()}>Open video channel</a>
+            }
+            <video ref={(ref) => videoRef = ref } autoPlay />
         </div>
     );
 }

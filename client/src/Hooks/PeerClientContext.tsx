@@ -80,12 +80,27 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
     function onRemoteStreamChanged(data: EventData) {
         const { stream } = data as Messages.RemoteStreamChangedEventData;
         setRemoteStream(stream);
+        let content = null;
+        switch(data.eventName) {
+            case Messages.PEER_MESSAGE_TYPE.REMOTE_AUDIO_ADDED:
+                content = 'Your peer started streaming audio';
+                break;
+            case Messages.PEER_MESSAGE_TYPE.REMOTE_AUDIO_REMOVED:
+                content = 'Your peer stopped streaming audio';
+                break;
+            case Messages.PEER_MESSAGE_TYPE.REMOTE_VIDEO_ADDED:
+                content = 'Your peer started streaming video';
+                break;
+            case Messages.PEER_MESSAGE_TYPE.REMOTE_VIDEO_REMOVED:
+                content = 'Your peer stopped streaming video';
+                break;
+            default:
+                throw new Error(`Invalid remoteStreamChanged event: ${JSON.stringify(data)}`);
+        }
         addMessage({
             type: MESSAGE_TYPES.INTERNAL,
             author: 'Internal',
-            content: stream !== null 
-                ? 'Your peer started streaming audio'
-                : 'Your peer stopped streaming audio',
+            content,
             date: Date.now(),
         });
     }
@@ -93,12 +108,27 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
     function onLocalStreamChanged(data: EventData) {
         const { stream } = data as Messages.LocalStreamChangedEventData;
         setLocalStream(stream);
+        let content = null;
+        switch(data.eventName) {
+            case Messages.PEER_MESSAGE_TYPE.LOCAL_AUDIO_ADDED:
+                content = 'You started streaming audio';
+                break;
+            case Messages.PEER_MESSAGE_TYPE.LOCAL_AUDIO_REMOVED:
+                content = 'You stopped streaming audio';
+                break;
+            case Messages.PEER_MESSAGE_TYPE.LOCAL_VIDEO_ADDED:
+                content = 'You started streaming video';
+                break;
+            case Messages.PEER_MESSAGE_TYPE.LOCAL_VIDEO_REMOVED:
+                content = 'You stopped streaming video';
+                break;
+            default:
+                throw new Error(`Invalid localStreamChanged event: ${JSON.stringify(data)}`);
+        }
         addMessage({
             type: MESSAGE_TYPES.INTERNAL,
             author: 'Internal',
-            content: stream !== null 
-                ? 'You started streaming audio'
-                : 'You stopped streaming audio',
+            content,
             date: Date.now(),
         });
     }
@@ -118,14 +148,15 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
             PEER_CONNECTION_EVENTS.TEXT_MESSAGE,
             onTextMessage,
         );
-        peerClient.addEventListener(
-            PEER_CONNECTION_EVENTS.REMOTE_STREAM_CHANGED,
-            onRemoteStreamChanged,
-        );
-        peerClient.addEventListener(
-            PEER_CONNECTION_EVENTS.LOCAL_STREAM_CHANGED,
-            onLocalStreamChanged,
-        );
+        peerClient.addEventListener(PEER_CONNECTION_EVENTS.REMOTE_AUDIO_ADDED, onRemoteStreamChanged);
+        peerClient.addEventListener(PEER_CONNECTION_EVENTS.REMOTE_AUDIO_REMOVED, onRemoteStreamChanged);
+        peerClient.addEventListener(PEER_CONNECTION_EVENTS.REMOTE_VIDEO_ADDED, onRemoteStreamChanged);
+        peerClient.addEventListener(PEER_CONNECTION_EVENTS.REMOTE_VIDEO_REMOVED, onRemoteStreamChanged);
+
+        peerClient.addEventListener(PEER_CONNECTION_EVENTS.LOCAL_AUDIO_ADDED, onLocalStreamChanged);
+        peerClient.addEventListener(PEER_CONNECTION_EVENTS.LOCAL_AUDIO_REMOVED, onLocalStreamChanged);
+        peerClient.addEventListener(PEER_CONNECTION_EVENTS.LOCAL_VIDEO_ADDED, onLocalStreamChanged);
+        peerClient.addEventListener(PEER_CONNECTION_EVENTS.LOCAL_VIDEO_REMOVED, onLocalStreamChanged);
         return () => {
             peerClient.removeEventListener(
                 PEER_CONNECTION_EVENTS.SERVER_CONNECTION_STATUS_CHANGED,
@@ -139,14 +170,15 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
                 PEER_CONNECTION_EVENTS.TEXT_MESSAGE,
                 onTextMessage,
             );
-            peerClient.removeEventListener(
-                PEER_CONNECTION_EVENTS.REMOTE_STREAM_CHANGED,
-                onRemoteStreamChanged,
-            );
-            peerClient.removeEventListener(
-                PEER_CONNECTION_EVENTS.LOCAL_STREAM_CHANGED,
-                onLocalStreamChanged,
-            );
+            peerClient.removeEventListener(PEER_CONNECTION_EVENTS.REMOTE_AUDIO_ADDED, onRemoteStreamChanged);
+            peerClient.removeEventListener(PEER_CONNECTION_EVENTS.REMOTE_AUDIO_REMOVED, onRemoteStreamChanged);
+            peerClient.removeEventListener(PEER_CONNECTION_EVENTS.REMOTE_VIDEO_ADDED, onRemoteStreamChanged);
+            peerClient.removeEventListener(PEER_CONNECTION_EVENTS.REMOTE_VIDEO_REMOVED, onRemoteStreamChanged);
+    
+            peerClient.removeEventListener(PEER_CONNECTION_EVENTS.LOCAL_AUDIO_ADDED, onLocalStreamChanged);
+            peerClient.removeEventListener(PEER_CONNECTION_EVENTS.LOCAL_AUDIO_REMOVED, onLocalStreamChanged);
+            peerClient.removeEventListener(PEER_CONNECTION_EVENTS.LOCAL_VIDEO_ADDED, onLocalStreamChanged);
+            peerClient.removeEventListener(PEER_CONNECTION_EVENTS.LOCAL_VIDEO_REMOVED, onLocalStreamChanged);
         };
     }, []);
 
