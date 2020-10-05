@@ -6,8 +6,9 @@ import usePeerClient from '../Hooks/PeerClientContext';
 
 import { CONNECTION_STATUS } from '../@types/Connections';
 
-import Button, { Color, NodeType } from '../Components/Button';
+import Button, { NodeType } from '../Components/Button';
 import { FlexContainer, FlexDirection } from '../Components/Utilities';
+import { Color, Size } from '../Components/Variables';
 
 export default function ConnectionFormContainer(): h.JSX.Element | null {
     const { serverConnectionStatus, peerConnectionStatus, serverUrl } = useConnections();
@@ -28,6 +29,7 @@ export default function ConnectionFormContainer(): h.JSX.Element | null {
                     <Button
                         nodeType={NodeType.INPUT}
                         color={Color.PRIMARY}
+                        size={Size.LARGE}
                         type="Submit"
                         value="Connect"
                     />

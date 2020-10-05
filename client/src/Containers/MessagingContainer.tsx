@@ -6,10 +6,12 @@ import usePeerClient from '../Hooks/PeerClientContext';
 
 import MessagesContainer from '../Components/MessagesContainer';
 import MessageInputContainer from './MessageInputContainer';
-import MessagingOptions from './MessagingOptions';
+import Topbar from './TopBar';
 
 import { CONNECTION_STATUS } from '../@types/Connections';
 import { Message } from '../@types/Messaging';
+import { FlexContainer, FlexDirection } from '../Components/Utilities';
+import RemoteVideoContainer from './RemoteVideoContainer';
 
 export default function MessagingContainer(): h.JSX.Element | null {
     const { peerConnectionStatus } = useConnections();
@@ -17,12 +19,13 @@ export default function MessagingContainer(): h.JSX.Element | null {
     const { peerClient } = usePeerClient();
     if (peerConnectionStatus !== CONNECTION_STATUS.CONNECTED) return null;
     return (
-        <div>
-            <MessagingOptions />
+        <FlexContainer direction={FlexDirection.COLUMN} style={{ height: '100%' }}>
+            <Topbar />
+            <RemoteVideoContainer />
             <MessagesContainer messages={messages} />
             <MessageInputContainer onMessageSend={(message: Message) => {
                 peerClient.sendTextMessage(message.content);
             }} />
-        </div>
+        </FlexContainer>
     );
 }

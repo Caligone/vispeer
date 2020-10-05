@@ -1,15 +1,11 @@
 import { h } from 'preact';
 
 import './utilities.scss';
+import { Size } from './Variables';
 
 type Children = h.JSX.Element | null | Array<h.JSX.Element | null>
 type ClassName = string | undefined
 
-export const enum Size {
-    SMALL = 'small',
-    MEDIUM = 'medium',
-    LARGE = 'large',
-}
 export const enum FlexDirection {
     ROW = 'row',
     ROW_REVERSE = 'row-reverse',
@@ -19,12 +15,13 @@ export const enum FlexDirection {
 
 type FlexContainerProps = {
     children: Children
-    verticalCenter: boolean | undefined
-    horizontalCenter: boolean | undefined
-    className: ClassName
+    verticalCenter?: boolean
+    horizontalCenter?: boolean
+    className?: ClassName
     direction: FlexDirection
+    style?: string | { [key: string]: string | number };
 };
-export function FlexContainer({ children, verticalCenter, horizontalCenter, className, direction }: FlexContainerProps): h.JSX.Element {
+export function FlexContainer({ children, verticalCenter, horizontalCenter, className, direction, ...props }: Partial<FlexContainerProps>): h.JSX.Element {
     const classNames = [
         'c-flex-container',
         verticalCenter ? 'c-flex-container__v-center' : '',
@@ -33,7 +30,7 @@ export function FlexContainer({ children, verticalCenter, horizontalCenter, clas
         className,
     ];
     return (
-        <div className={classNames.join(' ')}>
+        <div className={classNames.join(' ')} {...props}>
             {children}
         </div>
     )

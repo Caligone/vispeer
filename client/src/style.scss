@@ -1,4 +1,4 @@
-@import './Components/colors';
+@import './Components/variables';
 
 *, html, body {
     font-family: 'Proxima Nova Regular', 'Helvetica';
@@ -7,8 +7,8 @@
 body {
 	width: 100vw;
 	height: 100vh;
-	background-color: $backgroundColor;
-	color: $textColor;
+	background-color: $colorBackground;
+	color: $colorText;
 }
 
 @font-face {

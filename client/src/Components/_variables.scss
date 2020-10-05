@@ -1,0 +1,34 @@
+/*
+ *  Colors
+ */
+$colorPrimary: #ffffff;
+$colorPrimaryInverted: #000000;
+
+$colorSecondary: #11a5ed;
+$colorSecondaryInverted: #ffffff;
+
+$colorTertiary: #e3eaf2;
+$colorTertiaryInverted: #0a0e31;
+
+// Computed
+$colorText: $colorPrimary;
+$colorBackground: $colorPrimaryInverted;
+
+/*
+ *  Spaces
+ */
+$spaceSmall: 3px;
+$spaceMedium: 8px;
+$spaceLarge: 16px;
+
+/*
+ *  Font sizes
+ */
+$fontSizeSmall: 10px;
+$fontSizeMedium: 16px;
+$fontSizeLarge: 20px;
+
+/*
+ *  Misc
+ */
+$borderRadius: 5px;

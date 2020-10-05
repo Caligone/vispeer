@@ -1,37 +1,31 @@
-@import "colors";
-
-$messageContainerMargin: 20px;
-$messageInputContainerMargin: 10px;
+@import "variables";
 
 .c-message-input-container {
-    position: fixed;
-    bottom: 0;
-    left: 0;
     display: flex;
     align-items: center;
-    width: calc(100vw - #{$messageContainerMargin} * 2);
-    margin: $messageContainerMargin;
+    width: calc(100vw - #{$spaceLarge} * 2);
+    margin: $spaceLarge;
     box-sizing: border-box;
-    background-color: $backgroundColor;
+    background-color: $colorBackground;
+    font-size: $fontSizeMedium;
     .c-message-input {
         resize: none;
         height: 40px;
         width: 100%;
-        padding: 8px;
-        margin-left: 5px;
+        padding: $spaceMedium;
+        margin-left: $spaceMedium;
         border: 0;
-        border-radius: 3px 0 0 3px;
-        font-size: 16px;
+        border-radius: $borderRadius 0 0 $borderRadius;
     }
     .c-message-input-label {
         font-weight: bold;
     }
     .c-message-input-submit {
+        font-size: $fontSizeMedium;
         height: 56px;
         border: 0;
-        padding: 8px;
-        border-radius: 0 3px 3px 0;
-        font-size: 16px;
+        padding: $spaceMedium;
+        border-radius: 0 $borderRadius $borderRadius 0;
         font-weight: bold;
     }
 }

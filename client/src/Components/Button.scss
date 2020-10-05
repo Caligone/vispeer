@@ -1,22 +1,41 @@
-@import "colors";
+@import "variables";
 
 .c-button {
     display: inline-block;
-    padding: 16px;
-    border-radius: 3px;
-    font-size: 18px;
+    border-radius: $borderRadius;
+    padding: $spaceMedium;
+    margin: $spaceMedium;
+    font-size: $fontSizeMedium;
     font-weight: bold;
     text-decoration: none;
     border: 0;
+    &.c-button__size-large {
+        padding: $spaceLarge;
+        margin: $spaceLarge;
+        font-size: $fontSizeLarge;
+    }
+    &.c-button__size-small {
+        padding: $spaceSmall;
+        margin: $spaceSmall;
+        font-size: $fontSizeSmall;
+    }
     &.c-button__color-primary {
-        background-color: $primary;
-        color: $invertedPrimary;
+        background-color: $colorPrimary;
+        color: $colorPrimaryInverted;
         &:focus {
             text-decoration: underline;
         }
         &:hover {
-            background-color: darken($primary, 20);
-            color: $invertedPrimary;
+            background-color: darken($colorPrimary, 20);
+            color: $colorPrimaryInverted;
+        }
+        &.c-button__active {
+            background-color: darken($colorPrimary, 20);
+            color: $colorPrimaryInverted;
+            &:hover {
+                background-color: $colorPrimary;
+                color: $colorPrimaryInverted;
+            }
         }
     }
 }

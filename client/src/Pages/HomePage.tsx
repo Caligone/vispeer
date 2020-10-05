@@ -1,7 +1,8 @@
 import { h } from 'preact';
-import Button, { Color, NodeType } from '../Components/Button';
+import Button, { NodeType } from '../Components/Button';
 
-import { FlexContainer, FlexDirection, Logo, Size } from '../Components/Utilities';
+import { FlexContainer, FlexDirection, Logo } from '../Components/Utilities';
+import { Color, Size } from '../Components/Variables';
 
 import CONFIGURATION from '../config';
 
@@ -23,6 +24,7 @@ export default function HomePage(): h.JSX.Element {
                         nodeType={NodeType.A}
                         color={Color.PRIMARY}
                         href={`/join/${randomRoomName}`}
+                        size={Size.LARGE}
                     >
                         Create a room
                     </Button>
