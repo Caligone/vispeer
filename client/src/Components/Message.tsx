@@ -3,6 +3,7 @@ import { h } from 'preact';
 import './Message.scss';
 
 import { Message, MESSAGE_TYPES } from '../@types/Messaging';
+import AttachementsContainer from './AttachementsContainer';
 
 type MessageProps = {
     message: Message,
@@ -32,9 +33,10 @@ export default function Message({ message }: MessageProps): h.JSX.Element {
             <span className="c-message__time">
                 {(new Date(message.date)).toLocaleTimeString()}
             </span>
-            <span className="c-message__content">
+            <div className="c-message__content">
+                <AttachementsContainer currentMessage={message} />
                 {message.content}
-            </span>
+            </div>
         </div>
     );
 }

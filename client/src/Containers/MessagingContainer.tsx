@@ -24,7 +24,7 @@ export default function MessagingContainer(): h.JSX.Element | null {
             <RemoteVideoContainer />
             <MessagesContainer messages={messages} />
             <MessageInputContainer onMessageSend={(message: Message) => {
-                sendTextMessage(message.content);
+                sendTextMessage(message);
             }} />
         </FlexContainer>
     );

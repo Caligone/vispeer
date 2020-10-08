@@ -8,12 +8,12 @@ import {
     EVENTS as PEER_CONNECTION_EVENTS,
 } from '../lib/PeerClient';
 import { CONNECTION_STATUS } from '../@types/Connections';
-import { MESSAGE_TYPES } from '../@types/Messaging';
+import { MESSAGE_TYPES, Message } from '../@types/Messaging';
 import * as Messages from '../Messages';
 
 type ContextType = {
     connect: (_: string) => void,
-    sendTextMessage: (_: string) => void,
+    sendTextMessage: (_: Message) => void,
     removeAudioStream: () => void,
     addAudioStream: () => void,
     removeVideoStream: () => void,
@@ -78,6 +78,7 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
             author: 'Internal',
             content: `Server connection status changed to ${eventData.status}`,
             date: Date.now(),
+            attachements: [],
         });
     }
     function onPeerConnectionStatusChanged(rawEventData: EventData) {
@@ -88,12 +89,13 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
             author: 'Internal',
             content: `Peer connection status changed to ${eventData.status}`,
             date: Date.now(),
+            attachements: [],
         });
     }
 
     function onTextMessage(rawEventData: EventData) {
         addMessage({
-            ...rawEventData as Messages.TextMessageEventData,
+            ...(rawEventData as Messages.TextMessageEventData).message,
             type: MESSAGE_TYPES.REMOTE,
         });
     }
@@ -123,6 +125,7 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
             author: 'Internal',
             content,
             date: Date.now(),
+            attachements: [],
         });
     }
 
@@ -151,6 +154,7 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
             author: 'Internal',
             content,
             date: Date.now(),
+            attachements: [],
         });
     }
 

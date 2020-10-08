@@ -1,4 +1,5 @@
 import SimplePeer from "simple-peer";
+import { Message } from "./@types/Messaging";
 import { EventData } from "./lib/EventEmitter";
 
 export const NAMES = {
@@ -51,9 +52,7 @@ export interface PeerMessage {
 }
 export interface TextMessage extends PeerMessage {
     type: PEER_MESSAGE_TYPE.TEXT_MESSAGE,
-    author: string
-    content: string
-    date: number
+    message: Message,
 }
 export interface PeerSignal extends PeerMessage {
     type: PEER_MESSAGE_TYPE.SIGNAL,

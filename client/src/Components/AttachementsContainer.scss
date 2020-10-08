@@ -1,0 +1,14 @@
+@import "variables";
+
+.c-attachements-container {
+    max-height: 20vh;
+    overflow: hidden;
+    img {
+        display: inline-block;
+        margin: $spaceMedium;
+        max-width: 20vh;
+        max-height: 20vh;
+        width: auto;
+        height: auto;
+    }
+}

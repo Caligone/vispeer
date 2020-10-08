@@ -6,6 +6,7 @@ import {
 import * as Messages from '../Messages';
 import EventEmitter, { EventData } from './EventEmitter';
 import { CONNECTION_STATUS } from '../@types/Connections';
+import { Message } from '../@types/Messaging';
 
 export enum EVENTS {
     ROOM_JOINED = 'roomJoined',
@@ -86,14 +87,11 @@ export default class PeerClient {
         return this.serverClient.connect(this.serverURL);
     }
 
-    public sendTextMessage(content: string): void {
-        const textMessage: Messages.TextMessage = {
+    public sendTextMessage(message: Message): void {
+        this.peer?.send(JSON.stringify({
             type: Messages.PEER_MESSAGE_TYPE.TEXT_MESSAGE,
-            author: this.serverClient.getNickname(),
-            content,
-            date: Date.now()
-        };
-        this.peer?.send(JSON.stringify(textMessage));
+            message,
+        }));
     }
 
     protected sendSignal(data: Peer.SignalData): void {
