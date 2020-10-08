@@ -1,5 +1,5 @@
 import { h, createContext } from 'preact';
-import { useContext as preactUseContext, useEffect, useReducer } from 'preact/hooks';
+import { useContext as preactUseContext, useEffect } from 'preact/hooks';
 import { useState } from 'preact/hooks';
 import { Message, MESSAGE_TYPES } from '../@types/Messaging';
 
