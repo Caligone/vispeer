@@ -1,3 +1,5 @@
+@import "variables";
+
 .u-width__full { width: 100% }
 .u-height__full { height: 100% }
 
@@ -28,6 +30,9 @@
 }
 
 .c-logo {
+    path {
+        fill: $colorPrimary;
+    }
     &.c-logo__size-small {
         width: 40px;
         height: 40px;
@@ -54,7 +59,7 @@
         display: block;
         width: calc(50vw - 50%);
         height: 3px;
-        background: #ffffff;
+        background: $colorPrimary;
         position: absolute;
         left: 200px;
         top: 50%;
@@ -65,7 +70,7 @@
         display: block;
         width: calc(50vw - 50%);
         height: 3px;
-        background: #ffffff;
+        background: $colorPrimary;
         position: absolute;
         right: 200px;
         top: 50%;

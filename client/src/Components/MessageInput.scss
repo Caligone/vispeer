@@ -9,6 +9,7 @@
     background-color: $colorBackground;
     font-size: $fontSizeMedium;
     .c-message-input {
+        color: $colorPrimaryInverted;
         resize: none;
         height: 40px;
         width: 100%;
@@ -21,6 +22,7 @@
         font-weight: bold;
     }
     .c-message-input-submit {
+        color: $colorPrimaryInverted;
         font-size: $fontSizeMedium;
         height: 56px;
         border: 0;

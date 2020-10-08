@@ -1,3 +1,4 @@
+@use "sass:color";
 @import "variables";
 
 .c-button {
@@ -26,11 +27,11 @@
             text-decoration: underline;
         }
         &:hover {
-            background-color: darken($colorPrimary, 20);
+            background-color: color.mix($colorPrimary, $colorPrimaryInverted, $weight: 70%);
             color: $colorPrimaryInverted;
         }
         &.c-button__active {
-            background-color: darken($colorPrimary, 20);
+            background-color: color.mix($colorPrimary, $colorPrimaryInverted, $weight: 70%);
             color: $colorPrimaryInverted;
             &:hover {
                 background-color: $colorPrimary;

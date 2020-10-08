@@ -14,8 +14,8 @@
     &.c-message--local {
         flex-direction: row-reverse;
         .c-message__content {
-            background-color: $colorSecondary;
-            color: $colorSecondaryInverted;
+            color: $colorPrimary;
+            border: 2px solid $colorPrimary;
             border-radius: $borderRadius $borderRadius 0 $borderRadius;
             text-align: right;
         }
@@ -26,8 +26,8 @@
     &.c-message--remote {
         flex-direction: row;
         .c-message__content {
-            background-color: $colorTertiary;
-            color: $colorTertiaryInverted;
+            background-color: $colorPrimary;
+            color: $colorPrimaryInverted;
             border-radius: $borderRadius $borderRadius $borderRadius 0;
             text-align: left;
         }
