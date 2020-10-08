@@ -2,6 +2,7 @@ import { h } from 'preact';
 
 import useConnections from '../Hooks/ConnectionsContext';
 import usePeerClient from '../Hooks/PeerClientContext';
+import useMessaging from '../Hooks/MessagingContext';
 
 import TopBarComponent from '../Components/TopBar';
 
@@ -12,6 +13,7 @@ import { Color } from '../Components/Variables';
 export default function TopBar(): h.JSX.Element | null {
     const { peerConnectionStatus } = useConnections();
     const { peerClient, localStream } = usePeerClient();
+    const { notificationPermission, toggleNotificationPermission } = useMessaging();
     if (peerConnectionStatus !== CONNECTION_STATUS.CONNECTED) return null;
     const hasAudioTrack = localStream !== null && localStream.getAudioTracks().length > 0;
     const hasVideoTrack = localStream !== null && localStream.getVideoTracks().length > 0;
@@ -43,6 +45,13 @@ export default function TopBar(): h.JSX.Element | null {
                 onClick={toggleVideo}
             >
                 Video
+            </Button>
+            <Button
+                color={Color.PRIMARY}
+                active={notificationPermission === 'granted'}
+                onClick={toggleNotificationPermission}
+            >
+                Notifications
             </Button>
         </TopBarComponent>
     );
