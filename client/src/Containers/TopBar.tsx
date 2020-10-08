@@ -12,7 +12,13 @@ import { Color } from '../Components/Variables';
 
 export default function TopBar(): h.JSX.Element | null {
     const { peerConnectionStatus } = useConnections();
-    const { peerClient, localStream } = usePeerClient();
+    const {
+        localStream,
+        removeAudioStream,
+        addAudioStream,
+        removeVideoStream,
+        addVideoStream,
+    } = usePeerClient();
     const { notificationPermission, toggleNotificationPermission } = useMessaging();
     if (peerConnectionStatus !== CONNECTION_STATUS.CONNECTED) return null;
     const hasAudioTrack = localStream !== null && localStream.getAudioTracks().length > 0;
@@ -20,14 +26,14 @@ export default function TopBar(): h.JSX.Element | null {
 
     function toggleAudio(): void {
         hasAudioTrack
-            ? peerClient.removeAudioStream()
-            : peerClient.addAudioStream();
+            ? removeAudioStream()
+            : addAudioStream();
     }
 
     function toggleVideo() {
         hasVideoTrack
-            ? peerClient.removeVideoStream()
-            : peerClient.addVideoStream();
+            ? removeVideoStream()
+            : addVideoStream();
     }
 
     return (

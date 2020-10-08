@@ -13,7 +13,7 @@ import { Color, Size } from '../Components/Variables';
 export default function ConnectionFormContainer(): h.JSX.Element | null {
     const { serverConnectionStatus, peerConnectionStatus, serverUrl } = useConnections();
     const { roomName } = useMessaging();
-    const { peerClient } = usePeerClient();
+    const { connect } = usePeerClient();
 
     if (peerConnectionStatus === CONNECTION_STATUS.CONNECTED) return null;
 
@@ -24,7 +24,7 @@ export default function ConnectionFormContainer(): h.JSX.Element | null {
                 <h1>Ready to join <em>{roomName}</em></h1>
                 <form onSubmit={(e) => {
                     e.preventDefault();
-                    peerClient.connect(serverUrl);
+                    connect(serverUrl);
                 }}>
                     <Button
                         nodeType={NodeType.INPUT}

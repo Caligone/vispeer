@@ -12,13 +12,29 @@ import { MESSAGE_TYPES } from '../@types/Messaging';
 import * as Messages from '../Messages';
 
 type ContextType = {
-    peerClient: PeerClient,
+    connect: (_: string) => void,
+    sendTextMessage: (_: string) => void,
+    removeAudioStream: () => void,
+    addAudioStream: () => void,
+    removeVideoStream: () => void,
+    addVideoStream: () => void,
     remoteStream: MediaStream | null,
     localStream: MediaStream | null,
 };
 
 const defaultState: ContextType = {
-    peerClient: new PeerClient(),
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    connect: () => {},
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    sendTextMessage: () => {},
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    removeAudioStream: () => {},
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    addAudioStream: () => {},
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    removeVideoStream: () => {},
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    addVideoStream: () => {},
     remoteStream: null,
     localStream: null,
 } 
@@ -44,7 +60,12 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
     } = useMessaging();
 
     const context: ContextType = {
-        peerClient,
+        connect: peerClient.connect.bind(peerClient),
+        sendTextMessage: peerClient.sendTextMessage.bind(peerClient),
+        removeAudioStream: peerClient.removeAudioStream.bind(peerClient),
+        addAudioStream: peerClient.addAudioStream.bind(peerClient),
+        removeVideoStream: peerClient.removeVideoStream.bind(peerClient),
+        addVideoStream: peerClient.addVideoStream.bind(peerClient),
         remoteStream,
         localStream,
     };

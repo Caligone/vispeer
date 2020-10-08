@@ -16,7 +16,7 @@ import RemoteVideoContainer from './RemoteVideoContainer';
 export default function MessagingContainer(): h.JSX.Element | null {
     const { peerConnectionStatus } = useConnections();
     const { messages } = useMessaging();
-    const { peerClient } = usePeerClient();
+    const { sendTextMessage } = usePeerClient();
     if (peerConnectionStatus !== CONNECTION_STATUS.CONNECTED) return null;
     return (
         <FlexContainer direction={FlexDirection.COLUMN} style={{ height: '100%' }}>
@@ -24,7 +24,7 @@ export default function MessagingContainer(): h.JSX.Element | null {
             <RemoteVideoContainer />
             <MessagesContainer messages={messages} />
             <MessageInputContainer onMessageSend={(message: Message) => {
-                peerClient.sendTextMessage(message.content);
+                sendTextMessage(message.content);
             }} />
         </FlexContainer>
     );
