@@ -13,7 +13,6 @@
   "author": "Caligone",
   "private": true,
   "dependencies": {
-    "font-proxima-nova": "^1.0.1",
     "foundation-sites": "^6.6.3",
     "preact": "^10.4.8",
     "preact-router": "^3.2.1",
