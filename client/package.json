@@ -13,7 +13,6 @@
   "author": "Caligone",
   "private": true,
   "dependencies": {
-    "foundation-sites": "^6.6.3",
     "preact": "^10.4.8",
     "preact-router": "^3.2.1",
     "simple-peer": "^9.7.2"
