@@ -7,7 +7,10 @@ import Event from '../Event';
 import { CONNECTION_STATUS } from '../Connections';
 import { PeerSignal } from '../SignalingClient/Events';
 import {
+    EncryptedTextMessageReceivedMessage,
     MESSAGE_TYPES,
+    CryptoKeyMessage,
+    PeerMessage,
     PeerSignalMessage,
     RemoteAudioStreamRemovedMessage,
     RemoteVideoStreamRemovedMessage,
@@ -25,15 +28,20 @@ import {
     RemoteVideoStreamAdded,
     RemoteVideoStreamRemoved,
 } from './Events'
-import { Message } from '../../Hooks/MessagingContext';
+import { Message, MESSAGE_TYPES as MESSAGING_MESSAGE_TYPES } from '../../Hooks/MessagingContext';
+import Crypto from '../Crypto';
+import Storage from '../Storage';
 
 export default class PeerClient {
     
+    crypto?: Crypto;
+    storage?: Storage;
     serverURL: string | null = null;
     serverClient: SignalingClient;
     peer: Peer.Instance | null = null;
     isInitiator = false;
     peerConnected = false;
+    peerName: string | null = null;
     
     localStream: MediaStream | null = null;
     remoteStream: MediaStream | null = null;
@@ -53,6 +61,8 @@ export default class PeerClient {
 
     constructor() {
         this.serverClient = new SignalingClient();
+        const storagePromise = Storage.init().then((storage) => this.storage = storage);
+        Crypto.init(storagePromise).then((crypto) => this.crypto = crypto);
 
         // Events
         this.connectionStatusChangedEvent = new Event<ConnectionStatusChanged>();
@@ -96,11 +106,34 @@ export default class PeerClient {
         return this.serverClient.connect(this.serverURL);
     }
 
-    public sendTextMessage(message: Message): void {
+    public async sendTextMessage(message: Message): Promise<void> {
+        if (!this.crypto) {
+            throw new Error('Crypto not initialized');
+        }
+        if (!this.peerName) {
+            throw new Error('Peer identity not initialized');
+        }
+        const encryptedMessage = await this.crypto.encrypt(
+            JSON.stringify(message),
+            this.peerName,
+        );
         this.peer?.send(JSON.stringify({
             type: MESSAGE_TYPES.TEXT_MESSAGE,
-            message,
-        }));
+            message: encryptedMessage,
+            author: message.author,
+        } as EncryptedTextMessageReceivedMessage));
+    }
+
+
+    public async sendCryptoKey(): Promise<void> {
+        if (!this.crypto) {
+            throw new Error('Crypto not initialized');
+        }
+        this.peer?.send(JSON.stringify({
+            type: MESSAGE_TYPES.CRYPTO_KEY,
+            name: this.getNickname(),
+            publicKey: await this.crypto.exportOwnPublicKey(),
+        } as CryptoKeyMessage));
     }
 
     protected sendSignal(data: Peer.SignalData): void {
@@ -134,6 +167,8 @@ export default class PeerClient {
         // Check if current user is the room owner
         if (ownAck) {
             this.isInitiator = event.isInitiator;
+        } else {
+            this.peerName = event.nickname;
         }
 
         // Hacky way to prevent the initiator to send signal before peer connection
@@ -158,6 +193,7 @@ export default class PeerClient {
         });
         this.peer.on('connect', () => { 
             this.serverClient.close(); 
+            this.sendCryptoKey();
             this.peerConnected = true;
             this.connectionStatusChangedEvent.emit({
                 status: CONNECTION_STATUS.CONNECTED,
@@ -198,17 +234,24 @@ export default class PeerClient {
             }
         });
         this.peer.on('data', (content) => {
-            let peerMessage = null;
+            let peerMessage: PeerMessage | null = null;
             try {
                 peerMessage = JSON.parse(content);
             } catch (e) {
+                console.error(e);
+            }
+            if (!peerMessage) {
                 throw new Error(`Can not parse peerMessage '${content}'`);
             }
             switch (peerMessage.type) {
                 case MESSAGE_TYPES.TEXT_MESSAGE:
-                    this.textMessageReceivedEvent.emit({
-                        message: peerMessage.message
-                    });
+                    this.onMessage((peerMessage as EncryptedTextMessageReceivedMessage));
+                    break;
+                case MESSAGE_TYPES.CRYPTO_KEY:
+                    this.crypto?.storePublicIdentity(
+                        (peerMessage as CryptoKeyMessage).name,
+                        (peerMessage as CryptoKeyMessage).publicKey,
+                    );
                     break;
                 case MESSAGE_TYPES.REMOTE_AUDIO_REMOVED:
                     // Faking peer.on('stream') on close
@@ -219,9 +262,31 @@ export default class PeerClient {
                     this.remoteVideoStreamRemovedEvent.emit({ stream: null });
                     break;
                 case MESSAGE_TYPES.SIGNAL:
-                    this.peer?.signal(peerMessage.data);
+                    this.peer?.signal((peerMessage as PeerSignalMessage).data);
                     break;
             }
+        });
+    }
+
+    protected async onMessage(encryptedMessage: EncryptedTextMessageReceivedMessage): Promise<void> {
+        if (!this.crypto) {
+            throw new Error('Crypto not initialized');
+        }
+        const messageContent = await this.crypto.decrypt(encryptedMessage.message);
+        if (!messageContent) {
+            this.textMessageReceivedEvent.emit({
+                message: {
+                    type: MESSAGING_MESSAGE_TYPES.REMOTE,
+                    author: 'Unknown',
+                    content: '<Encrypted message>',
+                    date: Date.now(),
+                    attachements: [],
+                }
+            });
+            return;
+        }
+        this.textMessageReceivedEvent.emit({
+            message: JSON.parse(messageContent)
         });
     }
 

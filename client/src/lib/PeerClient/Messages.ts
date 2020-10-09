@@ -15,6 +15,8 @@ import {
 export const enum MESSAGE_TYPES {
     SIGNAL = 'signal',
     TEXT_MESSAGE = 'text_message',
+    CRYPTO_KEY = 'crypto_key',
+    // Streaming
     REMOTE_AUDIO_ADDED = 'remote_audio_added',
     REMOTE_AUDIO_REMOVED = 'remote_audio_removed',
     REMOTE_VIDEO_ADDED = 'remote_video_added',
@@ -25,11 +27,12 @@ export const enum MESSAGE_TYPES {
     LOCAL_VIDEO_REMOVED = 'local_video_removed',
 }
 
-interface PeerMessage {
+export interface PeerMessage {
     type: MESSAGE_TYPES
 }
 export interface EncryptedTextMessageReceivedMessage extends PeerMessage {
     type: MESSAGE_TYPES.TEXT_MESSAGE,
+    author: string,
     message: string,
 }
 export interface TextMessageReceivedMessage extends PeerMessage, TextMessageReceived {
@@ -38,6 +41,11 @@ export interface TextMessageReceivedMessage extends PeerMessage, TextMessageRece
 export interface PeerSignalMessage extends PeerMessage {
     type: MESSAGE_TYPES.SIGNAL,
     data: SimplePeer.SignalData,
+}
+export interface CryptoKeyMessage extends PeerMessage {
+    type: MESSAGE_TYPES.CRYPTO_KEY,
+    name: string,
+    publicKey: JsonWebKey,
 }
 
 export interface LocalAudioStreamAddedMessage extends PeerMessage, LocalAudioStreamAdded {
