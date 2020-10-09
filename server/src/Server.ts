@@ -95,6 +95,12 @@ export default class Server {
                 nickname: user.nickname,
                 isInitiator: user.isInitiator
             } as RoomJoinedMessage);
+            this.send(socket, {
+                type: MESSAGE_TYPES.ROOM_JOINED,
+                roomName: connectionParameters.roomName,
+                nickname: currentUser.nickname,
+                isInitiator: currentUser.isInitiator
+            } as RoomJoinedMessage);
         });
     }
 
