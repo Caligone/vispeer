@@ -1,7 +1,7 @@
 import { h, createContext } from 'preact';
 import { useContext as preactUseContext } from 'preact/hooks';
 import { useState } from 'preact/hooks';
-import { CONNECTION_STATUS } from '../@types/Connections';
+import { CONNECTION_STATUS } from '../lib/Connections';
 
 type ContextType = {
     serverConnectionStatus: CONNECTION_STATUS,

@@ -1,15 +1,14 @@
 import { h } from 'preact';
 
 import useConnections from '../Hooks/ConnectionsContext';
-import useMessaging from '../Hooks/MessagingContext';
+import useMessaging, { Message } from '../Hooks/MessagingContext';
 import usePeerClient from '../Hooks/PeerClientContext';
 
 import MessagesContainer from '../Components/MessagesContainer';
 import MessageInputContainer from './MessageInputContainer';
 import Topbar from './TopBar';
 
-import { CONNECTION_STATUS } from '../@types/Connections';
-import { Message } from '../@types/Messaging';
+import { CONNECTION_STATUS } from '../lib/Connections';
 import { FlexContainer, FlexDirection } from '../Components/Utilities';
 import RemoteVideoContainer from './RemoteVideoContainer';
 

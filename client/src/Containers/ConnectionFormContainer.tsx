@@ -4,7 +4,7 @@ import useConnections from '../Hooks/ConnectionsContext';
 import useMessaging from '../Hooks/MessagingContext';
 import usePeerClient from '../Hooks/PeerClientContext';
 
-import { CONNECTION_STATUS } from '../@types/Connections';
+import { CONNECTION_STATUS } from '../lib/Connections';
 
 import Button, { NodeType } from '../Components/Button';
 import { FlexContainer, FlexDirection } from '../Components/Utilities';

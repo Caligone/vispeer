@@ -7,7 +7,7 @@ import {
     ConnectionStatusChanged,
 } from './Events';
 
-import { CONNECTION_STATUS } from '../../@types/Connections';
+import { CONNECTION_STATUS } from '../Connections';
 import { MESSAGE_TYPES, PeerSignalMessage, RoomJoinedMessage, RoomJoinMessage, RoomLeftMessage } from './Messages';
 
 export default class SignalingClient {

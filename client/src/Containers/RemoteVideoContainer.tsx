@@ -3,7 +3,7 @@ import { h } from 'preact';
 import useConnections from '../Hooks/ConnectionsContext';
 import usePeerClient from '../Hooks/PeerClientContext';
 
-import { CONNECTION_STATUS } from '../@types/Connections';
+import { CONNECTION_STATUS } from '../lib/Connections';
 import { useEffect } from 'preact/hooks';
 import { FlexContainer } from '../Components/Utilities';
 

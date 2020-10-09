@@ -1,5 +1,5 @@
 import { h } from 'preact';
-import { Message } from '../@types/Messaging';
+import { Message } from '../Hooks/MessagingContext';
 
 import './MessageInput.scss';
 

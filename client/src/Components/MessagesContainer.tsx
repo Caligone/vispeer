@@ -3,8 +3,7 @@ import { h } from 'preact';
 import './MessagesContainer.scss';
 
 import MessageComponent from './Message';
-
-import { Message } from '../@types/Messaging';
+import { Message } from '../Hooks/MessagingContext';
 
 type MessageProps = {
     messages: Array<Message>,

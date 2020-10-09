@@ -3,11 +3,15 @@ import {
     default as SignalingClient,
     Events as SignalingEvents,
 } from '../SignalingClient'
-import * as Messages from '../../Messages';
 import Event from '../Event';
-import { CONNECTION_STATUS } from '../../@types/Connections';
-import { Message } from '../../@types/Messaging';
+import { CONNECTION_STATUS } from '../Connections';
 import { PeerSignal } from '../SignalingClient/Events';
+import {
+    MESSAGE_TYPES,
+    PeerSignalMessage,
+    RemoteAudioStreamRemovedMessage,
+    RemoteVideoStreamRemovedMessage,
+} from './Messages';
 
 import {
     ConnectionStatusChanged,
@@ -21,6 +25,7 @@ import {
     RemoteVideoStreamAdded,
     RemoteVideoStreamRemoved,
 } from './Events'
+import { Message } from '../../Hooks/MessagingContext';
 
 export default class PeerClient {
     
@@ -93,31 +98,31 @@ export default class PeerClient {
 
     public sendTextMessage(message: Message): void {
         this.peer?.send(JSON.stringify({
-            type: Messages.PEER_MESSAGE_TYPE.TEXT_MESSAGE,
+            type: MESSAGE_TYPES.TEXT_MESSAGE,
             message,
         }));
     }
 
     protected sendSignal(data: Peer.SignalData): void {
-        const signalMessage: Messages.PeerSignal = {
-            type: Messages.PEER_MESSAGE_TYPE.SIGNAL,
+        const signalMessage: PeerSignalMessage = {
+            type: MESSAGE_TYPES.SIGNAL,
             data,
         };
         this.peer?.send(JSON.stringify(signalMessage));
     }
 
     protected sendCloseAudioStream(): void {
-        const signalMessage: Messages.CloseAudioStream = {
-            type: Messages.PEER_MESSAGE_TYPE.REMOTE_AUDIO_REMOVED,
-        };
-        this.peer?.send(JSON.stringify(signalMessage));
+        this.peer?.send(JSON.stringify({
+            type: MESSAGE_TYPES.REMOTE_AUDIO_REMOVED,
+            stream: null,
+        } as RemoteAudioStreamRemovedMessage));
     }
 
     protected sendCloseVideoStream(): void {
-        const signalMessage: Messages.CloseVideoStream = {
-            type: Messages.PEER_MESSAGE_TYPE.REMOTE_VIDEO_REMOVED,
-        };
-        this.peer?.send(JSON.stringify(signalMessage));
+        this.peer?.send(JSON.stringify({
+            type: MESSAGE_TYPES.REMOTE_VIDEO_REMOVED,
+            stream: null,
+        } as RemoteVideoStreamRemovedMessage));
     }
 
     protected onServerConnectionStatusChanged(event: SignalingEvents.ConnectionStatusChanged): void {
@@ -200,20 +205,20 @@ export default class PeerClient {
                 throw new Error(`Can not parse peerMessage '${content}'`);
             }
             switch (peerMessage.type) {
-                case Messages.PEER_MESSAGE_TYPE.TEXT_MESSAGE:
+                case MESSAGE_TYPES.TEXT_MESSAGE:
                     this.textMessageReceivedEvent.emit({
                         message: peerMessage.message
                     });
                     break;
-                case Messages.PEER_MESSAGE_TYPE.REMOTE_AUDIO_REMOVED:
+                case MESSAGE_TYPES.REMOTE_AUDIO_REMOVED:
                     // Faking peer.on('stream') on close
                     this.remoteAudioStreamRemovedEvent.emit({ stream: null });
                     break;
-                case Messages.PEER_MESSAGE_TYPE.REMOTE_VIDEO_REMOVED:
+                case MESSAGE_TYPES.REMOTE_VIDEO_REMOVED:
                     // Faking peer.on('stream') on close
                     this.remoteVideoStreamRemovedEvent.emit({ stream: null });
                     break;
-                case Messages.PEER_MESSAGE_TYPE.SIGNAL:
+                case MESSAGE_TYPES.SIGNAL:
                     this.peer?.signal(peerMessage.data);
                     break;
             }

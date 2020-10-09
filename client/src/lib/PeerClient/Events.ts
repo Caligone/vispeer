@@ -1,6 +1,6 @@
+import { Message } from '../../Hooks/MessagingContext';
 /* eslint-disable @typescript-eslint/no-empty-interface */
-import { CONNECTION_STATUS } from '../../@types/Connections';
-import { Message } from '../../@types/Messaging';
+import { CONNECTION_STATUS } from '../Connections';
 
 export { ConnectionStatusChanged as SignalingConnectionStatusChanged } from '../SignalingClient/Events';
 

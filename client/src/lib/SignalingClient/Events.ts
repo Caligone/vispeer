@@ -1,6 +1,6 @@
 import SimplePeer from 'simple-peer';
 
-import { CONNECTION_STATUS } from '../../@types/Connections';
+import { CONNECTION_STATUS } from '../Connections';
 
 export interface RoomJoin {
     roomName: string,

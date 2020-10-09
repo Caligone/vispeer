@@ -6,7 +6,7 @@ import useMessaging from '../Hooks/MessagingContext';
 
 import TopBarComponent from '../Components/TopBar';
 
-import { CONNECTION_STATUS } from '../@types/Connections';
+import { CONNECTION_STATUS } from '../lib/Connections';
 import Button from '../Components/Button';
 import { Color } from '../Components/Variables';
 

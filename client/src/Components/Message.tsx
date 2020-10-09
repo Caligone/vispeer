@@ -2,8 +2,8 @@ import { h } from 'preact';
 
 import './Message.scss';
 
-import { Message, MESSAGE_TYPES } from '../@types/Messaging';
 import AttachementsContainer from './AttachementsContainer';
+import { Message, MESSAGE_TYPES } from '../Hooks/MessagingContext';
 
 type MessageProps = {
     message: Message,

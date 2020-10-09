@@ -1,11 +1,10 @@
 import { Fragment, h } from 'preact';
 import { useState } from 'preact/hooks';
-import { ATTACHEMENT_TYPES, Message, MESSAGE_TYPES } from '../@types/Messaging';
 import MessageInput from '../Components/MessageInput';
 
-import useMessaging from '../Hooks/MessagingContext';
+import useMessaging, { ATTACHEMENT_TYPES, Message, MESSAGE_TYPES } from '../Hooks/MessagingContext';
 import useConnections from '../Hooks/ConnectionsContext';
-import { CONNECTION_STATUS } from '../@types/Connections';
+import { CONNECTION_STATUS } from '../lib/Connections';
 import AttachementsContainer from '../Components/AttachementsContainer';
 
 type MessageInputContainerProps = {

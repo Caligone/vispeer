@@ -1,13 +1,11 @@
 import { h, createContext } from 'preact';
 import { useContext as preactUseContext, useEffect, useRef, useState } from 'preact/hooks';
 import useConnections from './ConnectionsContext';
-import useMessaging from './MessagingContext';
+import useMessaging, { Message, MESSAGE_TYPES } from './MessagingContext';
 import {
     default as PeerClient,
     Events as PeerEvents,
 } from '../lib/PeerClient';
-import { MESSAGE_TYPES, Message } from '../@types/Messaging';
-import * as Messages from '../Messages';
 
 type ContextType = {
     connect: (_: string) => void,
@@ -88,9 +86,9 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
                 addInternalMessage(`Peer connection status changed to ${event.status}`);
             });
         const unsubscribeToTextMessageReceivedEvent = peerClient.textMessageReceivedEvent
-            .subscribe((rawEventData: PeerEvents.TextMessageReceived) => {
+            .subscribe((event: PeerEvents.TextMessageReceived) => {
                 addMessage({
-                    ...(rawEventData as Messages.TextMessageEventData).message,
+                    ...event.message,
                     type: MESSAGE_TYPES.REMOTE,
                 });
             });
