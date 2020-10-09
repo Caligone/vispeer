@@ -1,24 +1,9 @@
-import SimplePeer from 'simple-peer';
-
-interface RoomJoin {
-    roomName: string,
-    nickname: string,
-}
-
-interface RoomJoined {
-    roomName: string,
-    nickname: string,
-    isInitiator: boolean,
-}
-
-interface RoomLeft {
-    roomName: string,
-    nickname: string,
-}
-
-interface PeerSignal {
-    data: SimplePeer.SignalData,
-}
+import {
+    RoomJoin,
+    RoomJoined,
+    PeerSignal,
+    RoomLeft,
+} from "./Events";
 
 export const enum MESSAGE_TYPES {
     ROOM_JOIN ='roomJoin',
@@ -27,7 +12,7 @@ export const enum MESSAGE_TYPES {
     PEER_SIGNAL ='peerSignal',
 }
 
-export interface ServerMessage {
+interface ServerMessage {
     type: MESSAGE_TYPES,
 }
 

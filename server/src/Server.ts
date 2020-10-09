@@ -1,8 +1,14 @@
 import WebSocket from 'ws';
 import { v4 as generateUuid } from 'uuid';
-import * as Messages from './Messages';
 import Peer from 'simple-peer';
 import { IncomingMessage } from 'http';
+import {
+    MESSAGE_TYPES,
+    ServerMessage,
+    PeerSignalMessage,
+    RoomJoinedMessage,
+    RoomLeftMessage,
+} from './Messages';
 
 type User = {
     identifier: string
@@ -48,6 +54,10 @@ export default class Server {
         };
     }
 
+    protected send(socket: WebSocket, data: ServerMessage): void {
+        socket.send(JSON.stringify(data));
+    }
+
     public addUserToRoom(roomName: string, user: User): boolean {
         if (!this.rooms.get(roomName)) {
             this.rooms.set(roomName, new Set<User>());
@@ -78,16 +88,13 @@ export default class Server {
         }
         socket.onmessage = this.onMessage.bind(this, user, connectionParameters.roomName)
         socket.onclose = this.onClose.bind(this, user, connectionParameters.roomName);
-        this.rooms.get(connectionParameters.roomName)!.forEach((currentUser) => {
-            const roomJoinedMessage: Messages.RoomJoined = {
+        this.rooms.get(connectionParameters.roomName)!.forEach((currentUser) => {;
+            this.send(currentUser.socket, {
+                type: MESSAGE_TYPES.ROOM_JOINED,
                 roomName: connectionParameters.roomName,
                 nickname: user.nickname,
                 isInitiator: user.isInitiator
-            };
-            currentUser.socket.send(JSON.stringify({
-                type: Messages.NAMES.RoomJoined,
-                payload: roomJoinedMessage
-            }));
+            } as RoomJoinedMessage);
         });
     }
 
@@ -96,8 +103,8 @@ export default class Server {
     protected onMessage(user: User, roomName: string, event: WebSocket.MessageEvent): void {
         const data = JSON.parse(event.data.toString());
         switch (data.type) {
-            case Messages.NAMES.PeerSignal:
-                this.onPeerSignal(user, roomName, data.payload);
+            case MESSAGE_TYPES.PEER_SIGNAL:
+                this.onPeerSignal(user, roomName, data.data);
                 break;
         }
     }
@@ -105,24 +112,21 @@ export default class Server {
     protected onPeerSignal(user: User, roomName: string, signal: Peer.SignalData): void {
         this.rooms.get(roomName)!.forEach((currentUser) => {
             if (currentUser.identifier === user.identifier) return;
-            currentUser.socket.send(JSON.stringify({
-                type: Messages.NAMES.PeerSignal,
-                payload: signal,
-            }));
+            this.send(currentUser.socket, {
+                type: MESSAGE_TYPES.PEER_SIGNAL,
+                data: signal,
+            } as PeerSignalMessage);
         });
     }
 
     protected onClose(user: User, roomName: string): void {
         this.rooms.get(roomName)?.delete(user);
-        const roomLeftMessage: Messages.RoomLeft = {
-            roomName,
-            nickname: user.nickname,
-        };
         this.rooms.get(roomName)?.forEach((user) => {
-            user.socket.send(JSON.stringify({
-                type: Messages.NAMES.RoomLeft,
-                payload: roomLeftMessage
-            }));
+            this.send(user.socket, {
+                type: MESSAGE_TYPES.ROOM_LEFT,
+                roomName,
+                nickname: user.nickname,
+            } as RoomLeftMessage);
         });
     }
 

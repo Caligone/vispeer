@@ -1,13 +1,11 @@
 import { h, createContext } from 'preact';
 import { useContext as preactUseContext, useEffect, useRef, useState } from 'preact/hooks';
-import { EventData } from '../lib/EventEmitter';
 import useConnections from './ConnectionsContext';
 import useMessaging from './MessagingContext';
 import {
     default as PeerClient,
-    EVENTS as PEER_CONNECTION_EVENTS,
+    Events as PeerEvents,
 } from '../lib/PeerClient';
-import { CONNECTION_STATUS } from '../@types/Connections';
 import { MESSAGE_TYPES, Message } from '../@types/Messaging';
 import * as Messages from '../Messages';
 
@@ -39,10 +37,6 @@ const defaultState: ContextType = {
     localStream: null,
 } 
 
-type ConnectionStatusChangedEventData = {
-    status: CONNECTION_STATUS,
-};
-
 const Context = createContext<ContextType>(defaultState);
 
 export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.Element => {
@@ -70,85 +64,7 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
         localStream,
     };
 
-    function onServerConnectionStatusChanged(rawEventData: EventData) {
-        const eventData = rawEventData as unknown as ConnectionStatusChangedEventData;
-        setServerConnectionStatus(eventData.status);
-        addMessage({
-            type: MESSAGE_TYPES.INTERNAL,
-            author: 'Internal',
-            content: `Server connection status changed to ${eventData.status}`,
-            date: Date.now(),
-            attachements: [],
-        });
-    }
-    function onPeerConnectionStatusChanged(rawEventData: EventData) {
-        const eventData = rawEventData as unknown as ConnectionStatusChangedEventData;
-        setPeerConnectionStatus(eventData.status);
-        addMessage({
-            type: MESSAGE_TYPES.INTERNAL,
-            author: 'Internal',
-            content: `Peer connection status changed to ${eventData.status}`,
-            date: Date.now(),
-            attachements: [],
-        });
-    }
-
-    function onTextMessage(rawEventData: EventData) {
-        addMessage({
-            ...(rawEventData as Messages.TextMessageEventData).message,
-            type: MESSAGE_TYPES.REMOTE,
-        });
-    }
-
-    function onRemoteStreamChanged(data: EventData) {
-        const { stream } = data as Messages.RemoteStreamChangedEventData;
-        setRemoteStream(stream);
-        let content = null;
-        switch(data.eventName) {
-            case Messages.PEER_MESSAGE_TYPE.REMOTE_AUDIO_ADDED:
-                content = 'Your peer started streaming audio';
-                break;
-            case Messages.PEER_MESSAGE_TYPE.REMOTE_AUDIO_REMOVED:
-                content = 'Your peer stopped streaming audio';
-                break;
-            case Messages.PEER_MESSAGE_TYPE.REMOTE_VIDEO_ADDED:
-                content = 'Your peer started streaming video';
-                break;
-            case Messages.PEER_MESSAGE_TYPE.REMOTE_VIDEO_REMOVED:
-                content = 'Your peer stopped streaming video';
-                break;
-            default:
-                throw new Error(`Invalid remoteStreamChanged event: ${JSON.stringify(data)}`);
-        }
-        addMessage({
-            type: MESSAGE_TYPES.INTERNAL,
-            author: 'Internal',
-            content,
-            date: Date.now(),
-            attachements: [],
-        });
-    }
-
-    function onLocalStreamChanged(data: EventData) {
-        const { stream } = data as Messages.LocalStreamChangedEventData;
-        setLocalStream(stream);
-        let content = null;
-        switch(data.eventName) {
-            case Messages.PEER_MESSAGE_TYPE.LOCAL_AUDIO_ADDED:
-                content = 'You started streaming audio';
-                break;
-            case Messages.PEER_MESSAGE_TYPE.LOCAL_AUDIO_REMOVED:
-                content = 'You stopped streaming audio';
-                break;
-            case Messages.PEER_MESSAGE_TYPE.LOCAL_VIDEO_ADDED:
-                content = 'You started streaming video';
-                break;
-            case Messages.PEER_MESSAGE_TYPE.LOCAL_VIDEO_REMOVED:
-                content = 'You stopped streaming video';
-                break;
-            default:
-                throw new Error(`Invalid localStreamChanged event: ${JSON.stringify(data)}`);
-        }
+    function addInternalMessage(content: string) {
         addMessage({
             type: MESSAGE_TYPES.INTERNAL,
             author: 'Internal',
@@ -161,49 +77,76 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
     useEffect(() => {
         peerClient.setRoomName(roomName);
         peerClient.setNickname(nickname);
-        peerClient.addEventListener(
-            PEER_CONNECTION_EVENTS.SERVER_CONNECTION_STATUS_CHANGED,
-            onServerConnectionStatusChanged,
-        );
-        peerClient.addEventListener(
-            PEER_CONNECTION_EVENTS.CONNECTION_STATUS_CHANGED,
-            onPeerConnectionStatusChanged,
-        );
-        peerClient.addEventListener(
-            PEER_CONNECTION_EVENTS.TEXT_MESSAGE,
-            onTextMessage,
-        );
-        peerClient.addEventListener(PEER_CONNECTION_EVENTS.REMOTE_AUDIO_ADDED, onRemoteStreamChanged);
-        peerClient.addEventListener(PEER_CONNECTION_EVENTS.REMOTE_AUDIO_REMOVED, onRemoteStreamChanged);
-        peerClient.addEventListener(PEER_CONNECTION_EVENTS.REMOTE_VIDEO_ADDED, onRemoteStreamChanged);
-        peerClient.addEventListener(PEER_CONNECTION_EVENTS.REMOTE_VIDEO_REMOVED, onRemoteStreamChanged);
+        const unsubscribeToSignalingConnectionStatusChangedEvent = peerClient.signalingConnectionStatusChangedEvent
+            .subscribe((event: PeerEvents.SignalingConnectionStatusChanged) => {
+                setServerConnectionStatus(event.status);
+                addInternalMessage(`Server connection status changed to ${event.status}`);
+            });
+        const unsubscribeToConnectionStatusChangedEvent = peerClient.connectionStatusChangedEvent
+            .subscribe((event: PeerEvents.ConnectionStatusChanged) => {
+                setPeerConnectionStatus(event.status);
+                addInternalMessage(`Peer connection status changed to ${event.status}`);
+            });
+        const unsubscribeToTextMessageReceivedEvent = peerClient.textMessageReceivedEvent
+            .subscribe((rawEventData: PeerEvents.TextMessageReceived) => {
+                addMessage({
+                    ...(rawEventData as Messages.TextMessageEventData).message,
+                    type: MESSAGE_TYPES.REMOTE,
+                });
+            });
+        const unsubscribeToLocalAudioStreamAddedEvent = peerClient.localAudioStreamAddedEvent
+            .subscribe((event: PeerEvents.LocalAudioStreamAdded) => {
+                setLocalStream(event.stream);
+                addInternalMessage('You started streaming audio');
+            });
+        const unsubscribeToLocalAudioStreamRemovedEvent = peerClient.localAudioStreamRemovedEvent
+            .subscribe((event: PeerEvents.LocalAudioStreamRemoved) => {
+                setLocalStream(event.stream);
+                addInternalMessage('You stopped streaming audio');
+            });
+        const unsubscribeToLocalVideoStreamAddedEvent = peerClient.localVideoStreamAddedEvent
+            .subscribe((event: PeerEvents.LocalVideoStreamAdded) => {
+                setLocalStream(event.stream);
+                addInternalMessage('You started streaming video');
+            });
+        const unsubscribeToLocalVideoStreamRemovedEvent = peerClient.localVideoStreamRemovedEvent
+            .subscribe((event: PeerEvents.LocalVideoStreamRemoved) => {
+                setLocalStream(event.stream);
+                addInternalMessage('You stopped streaming video');
+            });
+        const unsubscribeToRemoteAudioStreamAddedEvent = peerClient.remoteAudioStreamAddedEvent
+            .subscribe((event: PeerEvents.RemoteAudioStreamAdded) => {
+                setRemoteStream(event.stream);
+                addInternalMessage('Your peer started streaming audio');
+            });
+        const unsubscribeToRemoteAudioStreamRemovedEvent = peerClient.remoteAudioStreamRemovedEvent
+            .subscribe((event: PeerEvents.RemoteAudioStreamRemoved) => {
+                setRemoteStream(event.stream);
+                addInternalMessage('Your peer stopped streaming audio');
+            });
+        const unsubscribeToRemoteVideoStreamAddedEvent = peerClient.remoteVideoStreamAddedEvent
+            .subscribe((event: PeerEvents.RemoteVideoStreamAdded) => {
+                setRemoteStream(event.stream);
+                addInternalMessage('Your peer started streaming video');
+            });
+        const unsubscribeToRemoteVideoStreamRemovedEvent = peerClient.remoteVideoStreamRemovedEvent
+            .subscribe((event: PeerEvents.RemoteVideoStreamRemoved) => {
+                setRemoteStream(event.stream);
+                addInternalMessage('Your peer stopped streaming video');
+            });
 
-        peerClient.addEventListener(PEER_CONNECTION_EVENTS.LOCAL_AUDIO_ADDED, onLocalStreamChanged);
-        peerClient.addEventListener(PEER_CONNECTION_EVENTS.LOCAL_AUDIO_REMOVED, onLocalStreamChanged);
-        peerClient.addEventListener(PEER_CONNECTION_EVENTS.LOCAL_VIDEO_ADDED, onLocalStreamChanged);
-        peerClient.addEventListener(PEER_CONNECTION_EVENTS.LOCAL_VIDEO_REMOVED, onLocalStreamChanged);
         return () => {
-            peerClient.removeEventListener(
-                PEER_CONNECTION_EVENTS.SERVER_CONNECTION_STATUS_CHANGED,
-                onServerConnectionStatusChanged,
-            );
-            peerClient.removeEventListener(
-                PEER_CONNECTION_EVENTS.CONNECTION_STATUS_CHANGED,
-                onPeerConnectionStatusChanged,
-            );
-            peerClient.removeEventListener(
-                PEER_CONNECTION_EVENTS.TEXT_MESSAGE,
-                onTextMessage,
-            );
-            peerClient.removeEventListener(PEER_CONNECTION_EVENTS.REMOTE_AUDIO_ADDED, onRemoteStreamChanged);
-            peerClient.removeEventListener(PEER_CONNECTION_EVENTS.REMOTE_AUDIO_REMOVED, onRemoteStreamChanged);
-            peerClient.removeEventListener(PEER_CONNECTION_EVENTS.REMOTE_VIDEO_ADDED, onRemoteStreamChanged);
-            peerClient.removeEventListener(PEER_CONNECTION_EVENTS.REMOTE_VIDEO_REMOVED, onRemoteStreamChanged);
-    
-            peerClient.removeEventListener(PEER_CONNECTION_EVENTS.LOCAL_AUDIO_ADDED, onLocalStreamChanged);
-            peerClient.removeEventListener(PEER_CONNECTION_EVENTS.LOCAL_AUDIO_REMOVED, onLocalStreamChanged);
-            peerClient.removeEventListener(PEER_CONNECTION_EVENTS.LOCAL_VIDEO_ADDED, onLocalStreamChanged);
-            peerClient.removeEventListener(PEER_CONNECTION_EVENTS.LOCAL_VIDEO_REMOVED, onLocalStreamChanged);
+            unsubscribeToSignalingConnectionStatusChangedEvent();
+            unsubscribeToConnectionStatusChangedEvent();
+            unsubscribeToTextMessageReceivedEvent();
+            unsubscribeToLocalAudioStreamAddedEvent();
+            unsubscribeToLocalAudioStreamRemovedEvent();
+            unsubscribeToLocalVideoStreamAddedEvent();
+            unsubscribeToLocalVideoStreamRemovedEvent();
+            unsubscribeToRemoteAudioStreamAddedEvent();
+            unsubscribeToRemoteAudioStreamRemovedEvent();
+            unsubscribeToRemoteVideoStreamAddedEvent();
+            unsubscribeToRemoteVideoStreamRemovedEvent();
         };
     }, []);
 
