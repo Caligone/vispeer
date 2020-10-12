@@ -19,7 +19,7 @@ const defaultState: ContextType = {
     peerConnectionStatus: CONNECTION_STATUS.IDLE,
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     setPeerConnectionStatus: () => {},
-    serverUrl: 'ws://localhost:3000',
+    serverUrl: 'wss://server.talk.calig.one',
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     setServerUrl: () => {},
 } 

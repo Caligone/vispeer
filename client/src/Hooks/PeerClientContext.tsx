@@ -1,15 +1,17 @@
 import { h, createContext } from 'preact';
 import { useContext as preactUseContext, useEffect, useRef, useState } from 'preact/hooks';
 import useConnections from './ConnectionsContext';
+import useIdentities from './IdentitiesContext';
 import useMessaging, { Message, MESSAGE_TYPES } from './MessagingContext';
 import {
     default as PeerClient,
     Events as PeerEvents,
 } from '../lib/PeerClient';
+import Identity from '../lib/Identity';
 
 type ContextType = {
     connect: (_: string) => void,
-    sendTextMessage: (_: Message) => void,
+    sendTextMessage: (_: Message, to: Identity) => void,
     removeAudioStream: () => void,
     addAudioStream: () => void,
     removeVideoStream: () => void,
@@ -48,8 +50,11 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
     const { 
         addMessage,
         roomName,
-        nickname, setNickname,
     } = useMessaging();
+    const {
+        currentIdentity,
+        addPeerIdentity,
+    } = useIdentities();
 
     const context: ContextType = {
         connect: peerClient.connect.bind(peerClient),
@@ -74,7 +79,6 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
 
     useEffect(() => {
         peerClient.setRoomName(roomName);
-        peerClient.setNickname(nickname);
         const unsubscribeToSignalingConnectionStatusChangedEvent = peerClient.signalingConnectionStatusChangedEvent
             .subscribe((event: PeerEvents.SignalingConnectionStatusChanged) => {
                 setServerConnectionStatus(event.status);
@@ -84,6 +88,10 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
             .subscribe((event: PeerEvents.ConnectionStatusChanged) => {
                 setPeerConnectionStatus(event.status);
                 addInternalMessage(`Peer connection status changed to ${event.status}`);
+            });
+        const unsubscribeToPeerIdentityReceived = peerClient.peerIdentityReceived
+            .subscribe((event: PeerEvents.IdentityReceived) => {
+                addPeerIdentity(event.identity);
             });
         const unsubscribeToTextMessageReceivedEvent = peerClient.textMessageReceivedEvent
             .subscribe((event: PeerEvents.TextMessageReceived) => {
@@ -136,6 +144,7 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
         return () => {
             unsubscribeToSignalingConnectionStatusChangedEvent();
             unsubscribeToConnectionStatusChangedEvent();
+            unsubscribeToPeerIdentityReceived();
             unsubscribeToTextMessageReceivedEvent();
             unsubscribeToLocalAudioStreamAddedEvent();
             unsubscribeToLocalAudioStreamRemovedEvent();
@@ -153,9 +162,9 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
     }, [roomName]);
 
     useEffect(() => {
-        setNickname(nickname);
-        peerClient.setNickname(nickname);
-    }, [nickname]);
+        if (!currentIdentity) return;
+        peerClient.setOwnIdentity(currentIdentity);
+    }, [currentIdentity]);
 
     return (
         <Context.Provider value={context}>

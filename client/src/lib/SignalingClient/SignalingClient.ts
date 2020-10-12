@@ -15,7 +15,6 @@ export default class SignalingClient {
     protected url = '';
     protected socket: WebSocket | null = null;
 
-    protected nickname = '';
     protected roomName = '';
 
     // Events
@@ -32,26 +31,18 @@ export default class SignalingClient {
         this.peerSignalEvent = new Event<PeerSignal>();
     }
 
-    public setNickname(nickname: string): void{
-        this.nickname = nickname;
-    }
-
     public setRoomName(roomName: string): void{
         this.roomName = roomName;
     }
-    
-    public getNickname(): string {
-        return this.nickname;
-    }
 
-    public connect(serverURL: string): Promise<void> {
+    public connect(serverURL: string, name: string): Promise<void> {
         this.url = serverURL;
         this.connectionStatusChangedEvent.emit({
             status: CONNECTION_STATUS.CONNECTING,
         });
         return new Promise((resolve) => {
             const url = new URL(this.url);
-            url.searchParams.set('nickname', this.nickname);
+            url.searchParams.set('name', name);
             url.searchParams.set('roomName', this.roomName);
             this.socket = new WebSocket(url.toString());
             this.socket.onmessage = this.onMessage.bind(this);
@@ -80,14 +71,14 @@ export default class SignalingClient {
             case MESSAGE_TYPES.ROOM_JOINED:
                 this.roomJoinedEvent.emit({
                     roomName: (data as RoomJoinedMessage).roomName,
-                    nickname: (data as RoomJoinedMessage).nickname,
+                    name: (data as RoomJoinedMessage).name,
                     isInitiator: (data as RoomJoinedMessage).isInitiator,
                 });
                 break;
             case MESSAGE_TYPES.ROOM_LEFT:
                 this.roomLeftEvent.emit({
                     roomName: (data as RoomLeftMessage).roomName,
-                    nickname: (data as RoomLeftMessage).nickname,
+                    name: (data as RoomLeftMessage).name,
                 });
                 break;
         }

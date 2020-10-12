@@ -15,10 +15,12 @@ type ButtonProps = {
     color: Color
     size?: Size
     active?: boolean
+    disabled?: boolean
     href?: string
     onClick?: () => void
     type?: string
     value?: string
+    download?: string
 }
 
 export default function Button({ nodeType, color, size, active, children, ...props }: ButtonProps): h.JSX.Element {

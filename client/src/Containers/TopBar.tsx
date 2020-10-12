@@ -1,4 +1,4 @@
-import { h } from 'preact';
+import { Fragment, h } from 'preact';
 
 import useConnections from '../Hooks/ConnectionsContext';
 import usePeerClient from '../Hooks/PeerClientContext';
@@ -7,10 +7,10 @@ import useMessaging from '../Hooks/MessagingContext';
 import TopBarComponent from '../Components/TopBar';
 
 import { CONNECTION_STATUS } from '../lib/Connections';
-import Button from '../Components/Button';
+import Button, { NodeType } from '../Components/Button';
 import { Color } from '../Components/Variables';
 
-export default function TopBar(): h.JSX.Element | null {
+export default function TopBar(): h.JSX.Element {
     const { peerConnectionStatus } = useConnections();
     const {
         localStream,
@@ -19,8 +19,11 @@ export default function TopBar(): h.JSX.Element | null {
         removeVideoStream,
         addVideoStream,
     } = usePeerClient();
-    const { notificationPermission, toggleNotificationPermission } = useMessaging();
-    if (peerConnectionStatus !== CONNECTION_STATUS.CONNECTED) return null;
+    const {
+        notificationPermission,
+        toggleNotificationPermission,
+        roomName,
+    } = useMessaging();
     const hasAudioTrack = localStream !== null && localStream.getAudioTracks().length > 0;
     const hasVideoTrack = localStream !== null && localStream.getVideoTracks().length > 0;
 
@@ -38,26 +41,44 @@ export default function TopBar(): h.JSX.Element | null {
 
     return (
         <TopBarComponent>
+            { peerConnectionStatus === CONNECTION_STATUS.CONNECTED ?
+                <Fragment>
+                    <Button
+                        color={Color.PRIMARY}
+                        active={hasAudioTrack}
+                        onClick={toggleAudio}
+                    >
+                        Audio
+                    </Button>
+                    <Button
+                        color={Color.PRIMARY}
+                        active={hasVideoTrack}
+                        onClick={toggleVideo}
+                    >
+                        Video
+                    </Button>
+                    <Button
+                        color={Color.PRIMARY}
+                        active={notificationPermission === 'granted'}
+                        onClick={toggleNotificationPermission}
+                    >
+                        Notifications
+                    </Button>
+                </Fragment>
+            : null}
             <Button
                 color={Color.PRIMARY}
-                active={hasAudioTrack}
-                onClick={toggleAudio}
+                nodeType={NodeType.A}
+                href="/identities"
             >
-                Audio
+                Identities
             </Button>
             <Button
                 color={Color.PRIMARY}
-                active={hasVideoTrack}
-                onClick={toggleVideo}
+                nodeType={NodeType.A}
+                href={`/join/${roomName}`}
             >
-                Video
-            </Button>
-            <Button
-                color={Color.PRIMARY}
-                active={notificationPermission === 'granted'}
-                onClick={toggleNotificationPermission}
-            >
-                Notifications
+                Room
             </Button>
         </TopBarComponent>
     );

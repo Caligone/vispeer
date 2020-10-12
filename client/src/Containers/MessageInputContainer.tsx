@@ -4,6 +4,7 @@ import MessageInput from '../Components/MessageInput';
 
 import useMessaging, { ATTACHEMENT_TYPES, Message, MESSAGE_TYPES } from '../Hooks/MessagingContext';
 import useConnections from '../Hooks/ConnectionsContext';
+import useIdentities from '../Hooks/IdentitiesContext';
 import { CONNECTION_STATUS } from '../lib/Connections';
 import AttachementsContainer from '../Components/AttachementsContainer';
 
@@ -20,11 +21,12 @@ const defaultMessage: Message = {
 }
 
 export default function MessageInputContainer({ onMessageSend }: MessageInputContainerProps): h.JSX.Element {
-    const { nickname, addMessage } = useMessaging();
+    const { currentIdentity } = useIdentities();
+    const { addMessage } = useMessaging();
     const { peerConnectionStatus } = useConnections();
     const [currentMessage, setCurrentMessage] = useState<Message>({
         ...defaultMessage,
-        author: nickname,
+        author: currentIdentity?.name ?? 'Unknown',
     });
     return (
         <Fragment>
@@ -55,7 +57,7 @@ export default function MessageInputContainer({ onMessageSend }: MessageInputCon
                     onMessageSend(message);
                     setCurrentMessage({
                         ...defaultMessage,
-                        author: nickname,
+                        author: currentIdentity?.name ?? 'Unknown',
                     });
                 }}
                 onInput={(e) => {

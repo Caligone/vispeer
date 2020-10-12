@@ -27,8 +27,6 @@ export interface Message {
 }
 
 type ContextType = {
-    nickname: string,
-    setNickname: (_: string) => void,
     roomName: string,
     setRoomName: (_: string) => void,
     notificationPermission: NotificationPermission,
@@ -38,9 +36,6 @@ type ContextType = {
 };
 
 const defaultState: ContextType = {
-    nickname: Math.random().toString(36).substring(7),
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    setNickname: () => {},
     roomName: Math.random().toString(36).substring(7),
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     setRoomName: () => {},
@@ -69,7 +64,6 @@ async function sendMessageNotification(message: Message): Promise<Notification |
 }
 
 export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.Element => {
-    const [nickname, setNickname] = useState(defaultState.nickname);
     const [roomName, setRoomName] = useState(defaultState.roomName);
     const [notificationPermission, setNotificationPermission] = useState(defaultState.notificationPermission);
     const [messages, setMessages] = useState(defaultState.messages);
@@ -105,8 +99,6 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
     }
 
     const context: ContextType = {
-        nickname,
-        setNickname,
         roomName,
         setRoomName,
         messages,

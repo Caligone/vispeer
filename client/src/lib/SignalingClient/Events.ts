@@ -4,18 +4,18 @@ import { CONNECTION_STATUS } from '../Connections';
 
 export interface RoomJoin {
     roomName: string,
-    nickname: string,
+    name: string,
 }
 
 export interface RoomJoined {
     roomName: string,
-    nickname: string,
+    name: string,
     isInitiator: boolean,
 }
 
 export interface RoomLeft {
     roomName: string,
-    nickname: string,
+    name: string,
 }
 
 export interface PeerSignal {

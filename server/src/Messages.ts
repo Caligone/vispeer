@@ -2,18 +2,18 @@ import SimplePeer from 'simple-peer';
 
 interface RoomJoin {
     roomName: string,
-    nickname: string,
+    name: string,
 }
 
 interface RoomJoined {
     roomName: string,
-    nickname: string,
+    name: string,
     isInitiator: boolean,
 }
 
 interface RoomLeft {
     roomName: string,
-    nickname: string,
+    name: string,
 }
 
 interface PeerSignal {

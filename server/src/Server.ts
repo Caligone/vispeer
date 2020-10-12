@@ -12,13 +12,13 @@ import {
 
 type User = {
     identifier: string
-    nickname: string
+    name: string
     socket: WebSocket
     isInitiator: boolean
 }
 
 type ConnectionParameters = {
-    nickname: string
+    name: string
     roomName: string
 }
 
@@ -43,13 +43,13 @@ export default class Server {
     protected static getConnectionParameters(request: IncomingMessage): ConnectionParameters | null {
         if (!request.url) return null;
         const url = new URL(request.url, 'ws://localhost');
-        const nickname = url.searchParams.get('nickname');
+        const name = url.searchParams.get('name');
         const roomName = url.searchParams.get('roomName');
-        if (!nickname || !roomName) {
+        if (!name || !roomName) {
             return null;
         }
         return {
-            nickname,
+            name,
             roomName,
         };
     }
@@ -79,7 +79,7 @@ export default class Server {
         const user: User = {
             identifier: generateUuid(),
             socket,
-            nickname: connectionParameters.nickname,
+            name: connectionParameters.name,
             isInitiator: false,
         };
         if (!this.addUserToRoom(connectionParameters.roomName, user)) {
@@ -92,13 +92,13 @@ export default class Server {
             this.send(currentUser.socket, {
                 type: MESSAGE_TYPES.ROOM_JOINED,
                 roomName: connectionParameters.roomName,
-                nickname: user.nickname,
+                name: user.name,
                 isInitiator: user.isInitiator
             } as RoomJoinedMessage);
             this.send(socket, {
                 type: MESSAGE_TYPES.ROOM_JOINED,
                 roomName: connectionParameters.roomName,
-                nickname: currentUser.nickname,
+                name: currentUser.name,
                 isInitiator: currentUser.isInitiator
             } as RoomJoinedMessage);
         });
@@ -131,7 +131,7 @@ export default class Server {
             this.send(user.socket, {
                 type: MESSAGE_TYPES.ROOM_LEFT,
                 roomName,
-                nickname: user.nickname,
+                name: user.name,
             } as RoomLeftMessage);
         });
     }

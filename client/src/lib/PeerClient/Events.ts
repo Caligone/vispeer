@@ -1,6 +1,7 @@
 import { Message } from '../../Hooks/MessagingContext';
 /* eslint-disable @typescript-eslint/no-empty-interface */
 import { CONNECTION_STATUS } from '../Connections';
+import Identity from '../Identity';
 
 export { ConnectionStatusChanged as SignalingConnectionStatusChanged } from '../SignalingClient/Events';
 
@@ -10,6 +11,9 @@ export interface ConnectionStatusChanged {
 
 export interface TextMessageReceived {
     message: Message,
+}
+export interface IdentityReceived {
+    identity: Identity,
 }
 
 interface StreamChanged {

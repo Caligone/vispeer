@@ -10,6 +10,9 @@
     font-weight: bold;
     text-decoration: none;
     border: 0;
+    &:disabled {
+        cursor: not-allowed;
+    }
     &.c-button__size-large {
         padding: $spaceLarge;
         margin: $spaceLarge;
@@ -23,17 +26,21 @@
     &.c-button__color-primary {
         background-color: $colorPrimary;
         color: $colorPrimaryInverted;
-        &:focus {
+        &:disabled {
+            background-color: color.mix($colorPrimary, $colorPrimaryInverted, $weight: 30%);
+            color: $colorPrimaryInverted;
+        }
+        &:focus:not(:disabled) {
             text-decoration: underline;
         }
-        &:hover {
+        &:hover:not(:disabled) {
             background-color: color.mix($colorPrimary, $colorPrimaryInverted, $weight: 70%);
             color: $colorPrimaryInverted;
         }
         &.c-button__active {
             background-color: color.mix($colorPrimary, $colorPrimaryInverted, $weight: 70%);
             color: $colorPrimaryInverted;
-            &:hover {
+            &:hover:not(:disabled) {
                 background-color: $colorPrimary;
                 color: $colorPrimaryInverted;
             }

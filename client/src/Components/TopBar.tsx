@@ -3,7 +3,7 @@ import { h } from 'preact';
 import './TopBar.scss';
 
 type Props = {
-    children?: h.JSX.Element | string | Array<h.JSX.Element | string>
+    children?: h.JSX.Element | string | Array<h.JSX.Element | string | null>
 }
 
 export default function TopBar({ children }: Props): h.JSX.Element {

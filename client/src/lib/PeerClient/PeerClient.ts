@@ -27,15 +27,12 @@ import {
     RemoteAudioStreamRemoved,
     RemoteVideoStreamAdded,
     RemoteVideoStreamRemoved,
+    IdentityReceived,
 } from './Events'
 import { Message, MESSAGE_TYPES as MESSAGING_MESSAGE_TYPES } from '../../Hooks/MessagingContext';
-import Crypto from '../Crypto';
-import Storage from '../Storage';
+import Identity from '../Identity';
 
 export default class PeerClient {
-    
-    crypto?: Crypto;
-    storage?: Storage;
     serverURL: string | null = null;
     serverClient: SignalingClient;
     peer: Peer.Instance | null = null;
@@ -46,9 +43,13 @@ export default class PeerClient {
     localStream: MediaStream | null = null;
     remoteStream: MediaStream | null = null;
 
+    ownIdentity: Identity | null = null;
+    peerIdentity: Identity | null = null;
+
     public connectionStatusChangedEvent: Event<ConnectionStatusChanged>;
     public signalingConnectionStatusChangedEvent: Event<SignalingEvents.ConnectionStatusChanged>;
     public textMessageReceivedEvent: Event<TextMessageReceived>;
+    public peerIdentityReceived: Event<IdentityReceived>;
 
     public localAudioStreamAddedEvent: Event<LocalAudioStreamAdded>;
     public localAudioStreamRemovedEvent: Event<LocalAudioStreamRemoved>;
@@ -61,12 +62,11 @@ export default class PeerClient {
 
     constructor() {
         this.serverClient = new SignalingClient();
-        const storagePromise = Storage.init().then((storage) => this.storage = storage);
-        Crypto.init(storagePromise).then((crypto) => this.crypto = crypto);
 
         // Events
         this.connectionStatusChangedEvent = new Event<ConnectionStatusChanged>();
         this.signalingConnectionStatusChangedEvent = new Event<SignalingEvents.ConnectionStatusChanged>();
+        this.peerIdentityReceived = new Event<IdentityReceived>();
         this.textMessageReceivedEvent = new Event<TextMessageReceived>();
         this.localAudioStreamAddedEvent = new Event<LocalAudioStreamAdded>();
         this.localAudioStreamRemovedEvent = new Event<LocalAudioStreamRemoved>();
@@ -89,33 +89,25 @@ export default class PeerClient {
         });
     }
 
-    public setNickname(nickname: string): void {
-        this.serverClient.setNickname(nickname);
-    }
-    
-    public getNickname(): string {
-        return this.serverClient.getNickname();
-    }
-
     public setRoomName(roomName: string): void {
         this.serverClient.setRoomName(roomName);
     }
 
     public connect(serverURL: string): Promise<void> {
+        if (!this.ownIdentity) {
+            throw new Error('Can not connect to signaling server without identity');
+        }
         this.serverURL = serverURL;
-        return this.serverClient.connect(this.serverURL);
+        return this.serverClient.connect(this.serverURL, this.ownIdentity.name);
+    }
+
+    public async setOwnIdentity(identity: Identity): Promise<void> {
+        this.ownIdentity = identity;
     }
 
     public async sendTextMessage(message: Message): Promise<void> {
-        if (!this.crypto) {
-            throw new Error('Crypto not initialized');
-        }
-        if (!this.peerName) {
-            throw new Error('Peer identity not initialized');
-        }
-        const encryptedMessage = await this.crypto.encrypt(
+        const encryptedMessage = await this.peerIdentity?.encrypt(
             JSON.stringify(message),
-            this.peerName,
         );
         this.peer?.send(JSON.stringify({
             type: MESSAGE_TYPES.TEXT_MESSAGE,
@@ -124,15 +116,14 @@ export default class PeerClient {
         } as EncryptedTextMessageReceivedMessage));
     }
 
-
-    public async sendCryptoKey(): Promise<void> {
-        if (!this.crypto) {
-            throw new Error('Crypto not initialized');
+    public async shareOwnIdentity(): Promise<void> {
+        if (!this.ownIdentity) {
+            throw new Error('Trying to send empty identity');
         }
         this.peer?.send(JSON.stringify({
             type: MESSAGE_TYPES.CRYPTO_KEY,
-            name: this.getNickname(),
-            publicKey: await this.crypto.exportOwnPublicKey(),
+            name: this.ownIdentity.name,
+            publicKey: await this.ownIdentity.sharePublicKey(),
         } as CryptoKeyMessage));
     }
 
@@ -163,12 +154,12 @@ export default class PeerClient {
     }
 
     onRoomJoined(event: SignalingEvents.RoomJoined): void {
-        const ownAck = event.nickname === this.serverClient.getNickname();
+        const ownAck = event.name === this.ownIdentity?.name
         // Check if current user is the room owner
         if (ownAck) {
             this.isInitiator = event.isInitiator;
         } else {
-            this.peerName = event.nickname;
+            this.peerName = event.name;
         }
 
         // Hacky way to prevent the initiator to send signal before peer connection
@@ -193,7 +184,7 @@ export default class PeerClient {
         });
         this.peer.on('connect', () => { 
             this.serverClient.close(); 
-            this.sendCryptoKey();
+            this.shareOwnIdentity();
             this.peerConnected = true;
             this.connectionStatusChangedEvent.emit({
                 status: CONNECTION_STATUS.CONNECTED,
@@ -204,7 +195,7 @@ export default class PeerClient {
             this.peer = null;
             this.peerConnected = false;
             if (this.serverURL) {
-                this.serverClient.connect(this.serverURL);
+                this.connect(this.serverURL);
             }
             this.connectionStatusChangedEvent.emit({
                 status: CONNECTION_STATUS.DISCONNECTED,
@@ -233,7 +224,7 @@ export default class PeerClient {
                 this.remoteVideoStreamAddedEvent.emit({ stream });
             }
         });
-        this.peer.on('data', (content) => {
+        this.peer.on('data', async (content) => {
             let peerMessage: PeerMessage | null = null;
             try {
                 peerMessage = JSON.parse(content);
@@ -248,10 +239,13 @@ export default class PeerClient {
                     this.onMessage((peerMessage as EncryptedTextMessageReceivedMessage));
                     break;
                 case MESSAGE_TYPES.CRYPTO_KEY:
-                    this.crypto?.storePublicIdentity(
+                    this.peerIdentity = await Identity.buildIdentityFromPublicKey(
                         (peerMessage as CryptoKeyMessage).name,
                         (peerMessage as CryptoKeyMessage).publicKey,
                     );
+                    this.peerIdentityReceived.emit({
+                        identity: this.peerIdentity
+                    });
                     break;
                 case MESSAGE_TYPES.REMOTE_AUDIO_REMOVED:
                     // Faking peer.on('stream') on close
@@ -269,10 +263,10 @@ export default class PeerClient {
     }
 
     protected async onMessage(encryptedMessage: EncryptedTextMessageReceivedMessage): Promise<void> {
-        if (!this.crypto) {
-            throw new Error('Crypto not initialized');
+        if (!this.ownIdentity) {
+            throw new Error('Trying to decrypt incomming message with empty identity');
         }
-        const messageContent = await this.crypto.decrypt(encryptedMessage.message);
+        const messageContent = await this.ownIdentity.decrypt(encryptedMessage.message);
         if (!messageContent) {
             this.textMessageReceivedEvent.emit({
                 message: {
