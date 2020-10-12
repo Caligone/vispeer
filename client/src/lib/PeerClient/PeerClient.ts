@@ -34,11 +34,12 @@ import Identity from '../Identity';
 
 export default class PeerClient {
     serverURL: string | null = null;
+    roomName: string | null = null;
     serverClient: SignalingClient;
+
     peer: Peer.Instance | null = null;
     isInitiator = false;
     peerConnected = false;
-    peerName: string | null = null;
     
     localStream: MediaStream | null = null;
     remoteStream: MediaStream | null = null;
@@ -90,15 +91,22 @@ export default class PeerClient {
     }
 
     public setRoomName(roomName: string): void {
-        this.serverClient.setRoomName(roomName);
+        this.roomName = roomName;
     }
 
     public connect(serverURL: string): Promise<void> {
         if (!this.ownIdentity) {
             throw new Error('Can not connect to signaling server without identity');
         }
+        if (!this.roomName) {
+            throw new Error('Invalid room name');
+        }
         this.serverURL = serverURL;
-        return this.serverClient.connect(this.serverURL, this.ownIdentity.name);
+        return this.serverClient.connect(
+            this.serverURL,
+            this.ownIdentity.name,
+            this.roomName,
+        );
     }
 
     public async setOwnIdentity(identity: Identity): Promise<void> {
@@ -158,8 +166,6 @@ export default class PeerClient {
         // Check if current user is the room owner
         if (ownAck) {
             this.isInitiator = event.isInitiator;
-        } else {
-            this.peerName = event.name;
         }
 
         // Hacky way to prevent the initiator to send signal before peer connection

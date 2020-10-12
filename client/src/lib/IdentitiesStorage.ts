@@ -84,7 +84,12 @@ export default class IdentitiesStorage {
                 .objectStore(IdentitiesStorage.OBJECT_STORE_NAME)
                 .add(identity);
                 if (!request) return resolve()
-                request.onerror = reject;
+                request.onerror = (e) => {
+                    if ((e.target as IDBRequest).error?.name === 'ConstraintError') {
+                        return resolve();
+                    }
+                    return reject();
+                };
                 request.onsuccess = () => {
                     resolve();
                     this.identityAdded.emit(identity);

@@ -12,10 +12,7 @@ import { MESSAGE_TYPES, PeerSignalMessage, RoomJoinedMessage, RoomJoinMessage, R
 
 export default class SignalingClient {
 
-    protected url = '';
     protected socket: WebSocket | null = null;
-
-    protected roomName = '';
 
     // Events
     public connectionStatusChangedEvent: Event<ConnectionStatusChanged>;
@@ -31,19 +28,14 @@ export default class SignalingClient {
         this.peerSignalEvent = new Event<PeerSignal>();
     }
 
-    public setRoomName(roomName: string): void{
-        this.roomName = roomName;
-    }
-
-    public connect(serverURL: string, name: string): Promise<void> {
-        this.url = serverURL;
+    public connect(serverURL: string, name: string, roomName: string): Promise<void> {
         this.connectionStatusChangedEvent.emit({
             status: CONNECTION_STATUS.CONNECTING,
         });
         return new Promise((resolve) => {
-            const url = new URL(this.url);
+            const url = new URL(serverURL);
             url.searchParams.set('name', name);
-            url.searchParams.set('roomName', this.roomName);
+            url.searchParams.set('roomName', roomName);
             this.socket = new WebSocket(url.toString());
             this.socket.onmessage = this.onMessage.bind(this);
             this.socket.onopen = () => {
