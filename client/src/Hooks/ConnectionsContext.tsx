@@ -2,6 +2,7 @@ import { h, createContext } from 'preact';
 import { useContext as preactUseContext } from 'preact/hooks';
 import { useState } from 'preact/hooks';
 import { CONNECTION_STATUS } from '../lib/Connections';
+import CONFIGURATION from '../config';
 
 type ContextType = {
     serverConnectionStatus: CONNECTION_STATUS,
@@ -19,7 +20,7 @@ const defaultState: ContextType = {
     peerConnectionStatus: CONNECTION_STATUS.IDLE,
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     setPeerConnectionStatus: () => {},
-    serverUrl: 'wss://server.talk.calig.one',
+    serverUrl: CONFIGURATION.signalingServerUrl,
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     setServerUrl: () => {},
 } 

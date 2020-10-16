@@ -1,3 +1,4 @@
 export default {
-    appName: "Vispeer"
+    appName: 'Vispeer',
+    signalingServerUrl: 'wss://server.talk.calig.one',
 };
