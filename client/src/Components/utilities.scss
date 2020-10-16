@@ -11,6 +11,7 @@
     display: flex;
     &.c-flex-container__v-center {
         align-items: center;
+        height: 100%;
     }
     &.c-flex-container__h-center {
         justify-content: center;

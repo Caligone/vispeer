@@ -3,6 +3,7 @@ import { h } from 'preact';
 import useConnections from '../Hooks/ConnectionsContext';
 import useMessaging from '../Hooks/MessagingContext';
 import usePeerClient from '../Hooks/PeerClientContext';
+import useIdentities from '../Hooks/IdentitiesContext';
 
 import { CONNECTION_STATUS } from '../lib/Connections';
 
@@ -14,7 +15,7 @@ export default function ConnectionFormContainer(): h.JSX.Element | null {
     const { serverConnectionStatus, peerConnectionStatus, serverUrl } = useConnections();
     const { roomName } = useMessaging();
     const { connect } = usePeerClient();
-
+    const { currentIdentity } = useIdentities();
     if (peerConnectionStatus === CONNECTION_STATUS.CONNECTED) return null;
 
     let content = null;
@@ -31,7 +32,7 @@ export default function ConnectionFormContainer(): h.JSX.Element | null {
                         color={Color.PRIMARY}
                         size={Size.LARGE}
                         type="Submit"
-                        value="Connect"
+                        value={`Connect as ${currentIdentity?.name ?? 'unknown'}`}
                     />
                 </form>
             </div>

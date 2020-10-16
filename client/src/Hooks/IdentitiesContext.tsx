@@ -10,7 +10,7 @@ type ContextType = {
     deleteIdentity: (_: string) => Promise<void>,
     setCurrentIdentity: (_: string) => void,
     addPeerIdentity: (_: Identity) => Promise<void>,
-    generateIdentity: () => Promise<void>,
+    generateIdentity: (_?: string) => Promise<void>,
 };
 
 const Context = createContext<ContextType>({} as ContextType);
@@ -34,9 +34,9 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
         );
     }
 
-    const generateIdentity = async (): Promise<void> => {
-        const randomName = Math.random().toString(36).substring(7);
-        const newIdentity = await Identity.generateIdentity(randomName);
+    const generateIdentity = async (nickname?: string): Promise<void> => {
+        const identityName = nickname ?? Math.random().toString(36).substring(7);
+        const newIdentity = await Identity.generateIdentity(identityName);
         await identitiesStorage?.saveIdentity(newIdentity);
         setCurrentIdentity(newIdentity);
     };
@@ -53,7 +53,7 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
                 if (currentIdentityFound) {
                     return setCurrentIdentity(currentIdentityFound);
                 }
-                return generateIdentity();
+                return null;
         });
         const unsubscribeToIdentityAdded = identitiesStorage.identityAdded.subscribe(async (identity: Identity) => {
             setIdentities((identities) => [...identities, identity]);

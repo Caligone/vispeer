@@ -38,7 +38,7 @@ export function FlexContainer({ children, verticalCenter, horizontalCenter, clas
 
 type LogoProps = {
     size: Size
-    className: ClassName
+    className?: ClassName
 }
 export function Logo({ size, className, ...props }: LogoProps): h.JSX.Element {
     const classNames = [

@@ -1,12 +1,15 @@
 import { h } from 'preact';
 import Button, { NodeType } from '../Components/Button';
 
+import useIdentities from '../Hooks/IdentitiesContext';
+
 import { FlexContainer, FlexDirection, Logo } from '../Components/Utilities';
 import { Color, Size } from '../Components/Variables';
 
 import CONFIGURATION from '../config';
 
 export default function HomePage(): h.JSX.Element {
+    const { currentIdentity } = useIdentities();
     const randomRoomName = Math.random().toString(36).substring(7);
     return (
         <FlexContainer
@@ -26,7 +29,7 @@ export default function HomePage(): h.JSX.Element {
                         href={`/join/${randomRoomName}`}
                         size={Size.LARGE}
                     >
-                        Create a room
+                        Create a room as {currentIdentity?.name ?? 'unknown'}
                     </Button>
                 </div>
             </div>

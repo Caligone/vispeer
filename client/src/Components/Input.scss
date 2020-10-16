@@ -1,0 +1,9 @@
+@import "variables";
+
+.c-input {
+    margin: $spaceSmall;
+    padding: $spaceMedium;
+    border-radius: $borderRadius;
+    font-size: $fontSizeMedium;
+    border: 0;
+}

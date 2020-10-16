@@ -9,6 +9,7 @@ import { Provider as PeerClientProvider } from './Hooks/PeerClientContext';
 import HomePage from './Pages/HomePage';
 import JoinPage from './Pages/JoinPage';
 import IdentitiesPage from './Pages/IdentitiesPage';
+import OnBoardingContainer from './Containers/OnBoardingContainer';
 
 function Providers({ children }: h.JSX.ElementChildrenAttribute): h.JSX.Element {
     return (
@@ -27,12 +28,14 @@ function Providers({ children }: h.JSX.ElementChildrenAttribute): h.JSX.Element 
 export default function App(): h.JSX.Element {
     return (
         <Providers>
-            <Router>
-                <Route path="/join/:roomName" component={JoinPage} />
-                <Route path="/identities" component={IdentitiesPage} />
-                <Route path="/" component={HomePage} />
-                <Route default component={() => (<h1>Not found</h1>)} />
-            </Router>
+            <OnBoardingContainer>
+                <Router>
+                    <Route path="/join/:roomName" component={JoinPage} />
+                    <Route path="/identities" component={IdentitiesPage} />
+                    <Route path="/" component={HomePage} />
+                    <Route default component={() => (<h1>Not found</h1>)} />
+                </Router>
+            </OnBoardingContainer>
         </Providers>
     );
 }
