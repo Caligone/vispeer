@@ -1,7 +1,6 @@
 import { h, createContext } from 'preact';
 import { useContext as preactUseContext, useEffect, useRef, useState } from 'preact/hooks';
 import LoadingScreen from '../Components/LoadingScreen';
-import QueryablePromise from '../lib/QueryablePromise';
 import IdentitiesStorage from '../lib/IdentitiesStorage';
 import Identity from '../lib/Identity';
 
@@ -17,18 +16,20 @@ type ContextType = {
 const Context = createContext<ContextType>({} as ContextType);
 
 export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.Element => {
-    const { current: identitiesStoragePromise } = useRef(new QueryablePromise(IdentitiesStorage.init()));
+    const { current: identitiesStoragePromise } = useRef(IdentitiesStorage.init());
     const [ identitiesStorage, setIdentitiesStorage ] = useState<IdentitiesStorage | null>(null);
     const [ identities, setIdentities ] = useState<Array<Identity>>([]);
     const [ currentIdentity, setCurrentIdentity ] = useState<Identity | null>(null);
     useEffect(() => {
-        setIdentitiesStorage(identitiesStoragePromise.value as IdentitiesStorage);
-    }, [identitiesStoragePromise] );
-
+        (async () => {
+            const newIdentitiesStorage = await identitiesStoragePromise;
+            setIdentitiesStorage(newIdentitiesStorage);
+        })();
+    }, [identitiesStoragePromise]);
     if (identitiesStorage === null) {
         return (
             <LoadingScreen>
-                <h1>Initializing storage...</h1>
+                <h1>Initializing identities storage...</h1>
             </LoadingScreen>
         );
     }
