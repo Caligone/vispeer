@@ -35,7 +35,7 @@ import Identity from '../Identity';
 export default class PeerConnection {
     serverURL: string | null = null;
     roomName: string | null = null;
-    serverClient: SignalingServerConnection;
+    signalingServerConnection: SignalingServerConnection;
 
     peer: Peer.Instance | null = null;
     isInitiator = false;
@@ -61,8 +61,8 @@ export default class PeerConnection {
     public remoteVideoStreamAddedEvent: Event<RemoteVideoStreamAdded>;
     public remoteVideoStreamRemovedEvent: Event<RemoteVideoStreamRemoved>;
 
-    constructor() {
-        this.serverClient = new SignalingServerConnection();
+    constructor(signalingServerConnection: SignalingServerConnection) {
+        this.signalingServerConnection = signalingServerConnection;
 
         // Events
         this.connectionStatusChangedEvent = new Event<ConnectionStatusChanged>();
@@ -79,13 +79,13 @@ export default class PeerConnection {
         this.remoteVideoStreamRemovedEvent = new Event<RemoteVideoStreamRemoved>();
 
         // Listeners
-        this.serverClient.connectionStatusChangedEvent.subscribe(
+        this.signalingServerConnection.connectionStatusChangedEvent.subscribe(
             this.onServerConnectionStatusChanged.bind(this),
         );
-        this.serverClient.roomJoinedEvent.subscribe(
+        this.signalingServerConnection.roomJoinedEvent.subscribe(
             this.onRoomJoined.bind(this),
         );
-        this.serverClient.peerSignalEvent.subscribe((event: PeerSignal) => {
+        this.signalingServerConnection.peerSignalEvent.subscribe((event: PeerSignal) => {
             this.peer?.signal(event.data)
         });
     }
@@ -102,7 +102,7 @@ export default class PeerConnection {
             throw new Error('Invalid room name');
         }
         this.serverURL = serverURL;
-        return this.serverClient.connect(
+        return this.signalingServerConnection.connect(
             this.serverURL,
             this.ownIdentity.name,
             this.roomName,
@@ -185,11 +185,11 @@ export default class PeerConnection {
             if (this.peerConnected) {
                 this.sendSignal(signal);
             } else {
-                this.serverClient.sendSignal(signal);
+                this.signalingServerConnection.sendSignal(signal);
             }
         });
         this.peer.on('connect', () => { 
-            this.serverClient.close(); 
+            this.signalingServerConnection.close(); 
             this.shareOwnIdentity();
             this.peerConnected = true;
             this.connectionStatusChangedEvent.emit({

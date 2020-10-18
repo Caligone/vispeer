@@ -2,6 +2,7 @@ import { h, createContext } from 'preact';
 import { useContext as preactUseContext, useEffect, useRef, useState } from 'preact/hooks';
 import useConnections from './ConnectionsContext';
 import useIdentities from './IdentitiesContext';
+import useSignalingServerConnection from './SignalingServerConnectionContext';
 import useMessaging, { Message, MESSAGE_TYPES } from './MessagingContext';
 import {
     default as PeerConnection,
@@ -40,7 +41,8 @@ const defaultState: ContextType = {
 const Context = createContext<ContextType>(defaultState);
 
 export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.Element => {
-    const { current: peerConnection } = useRef(new PeerConnection());
+    const { signalingServerConnection } = useSignalingServerConnection();
+    const { current: peerConnection } = useRef(new PeerConnection(signalingServerConnection));
     const [ remoteStream, setRemoteStream ] = useState<MediaStream | null>(null);
     const [ localStream, setLocalStream ] = useState<MediaStream | null>(null);
     const {
