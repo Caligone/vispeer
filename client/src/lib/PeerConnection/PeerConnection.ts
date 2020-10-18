@@ -1,11 +1,11 @@
 import Peer from 'simple-peer';
 import {
-    default as SignalingClient,
+    default as SignalingServerConnection,
     Events as SignalingEvents,
-} from '../SignalingClient'
+} from '../SignalingServerConnection'
 import Event from '../Event';
 import { CONNECTION_STATUS } from '../Connections';
-import { PeerSignal } from '../SignalingClient/Events';
+import { PeerSignal } from '../SignalingServerConnection/Events';
 import {
     EncryptedTextMessageReceivedMessage,
     MESSAGE_TYPES,
@@ -32,10 +32,10 @@ import {
 import { Message, MESSAGE_TYPES as MESSAGING_MESSAGE_TYPES } from '../../Hooks/MessagingContext';
 import Identity from '../Identity';
 
-export default class PeerClient {
+export default class PeerConnection {
     serverURL: string | null = null;
     roomName: string | null = null;
-    serverClient: SignalingClient;
+    serverClient: SignalingServerConnection;
 
     peer: Peer.Instance | null = null;
     isInitiator = false;
@@ -62,7 +62,7 @@ export default class PeerClient {
     public remoteVideoStreamRemovedEvent: Event<RemoteVideoStreamRemoved>;
 
     constructor() {
-        this.serverClient = new SignalingClient();
+        this.serverClient = new SignalingServerConnection();
 
         // Events
         this.connectionStatusChangedEvent = new Event<ConnectionStatusChanged>();

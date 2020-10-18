@@ -3,7 +3,7 @@ import { Message } from '../../Hooks/MessagingContext';
 import { CONNECTION_STATUS } from '../Connections';
 import Identity from '../Identity';
 
-export { ConnectionStatusChanged as SignalingConnectionStatusChanged } from '../SignalingClient/Events';
+export { ConnectionStatusChanged as SignalingConnectionStatusChanged } from '../SignalingServerConnection/Events';
 
 export interface ConnectionStatusChanged {
     status: CONNECTION_STATUS,

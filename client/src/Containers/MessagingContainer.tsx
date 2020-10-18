@@ -2,7 +2,7 @@ import { h } from 'preact';
 
 import useConnections from '../Hooks/ConnectionsContext';
 import useMessaging, { Message } from '../Hooks/MessagingContext';
-import usePeerClient from '../Hooks/PeerClientContext';
+import usePeerConnection from '../Hooks/PeerConnectionContext';
 
 import MessagesContainer from '../Components/MessagesContainer';
 import MessageInputContainer from './MessageInputContainer';
@@ -15,7 +15,7 @@ import RemoteVideoContainer from './RemoteVideoContainer';
 export default function MessagingContainer(): h.JSX.Element | null {
     const { peerConnectionStatus } = useConnections();
     const { messages } = useMessaging();
-    const { sendTextMessage } = usePeerClient();
+    const { sendTextMessage } = usePeerConnection();
     if (peerConnectionStatus !== CONNECTION_STATUS.CONNECTED) return null;
     return (
         <FlexContainer direction={FlexDirection.COLUMN} style={{ height: '100%' }}>

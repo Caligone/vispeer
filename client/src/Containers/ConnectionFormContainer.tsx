@@ -2,7 +2,7 @@ import { h } from 'preact';
 
 import useConnections from '../Hooks/ConnectionsContext';
 import useMessaging from '../Hooks/MessagingContext';
-import usePeerClient from '../Hooks/PeerClientContext';
+import usePeerConnection from '../Hooks/PeerConnectionContext';
 import useIdentities from '../Hooks/IdentitiesContext';
 
 import { CONNECTION_STATUS } from '../lib/Connections';
@@ -14,7 +14,7 @@ import { Color, Size } from '../Components/Variables';
 export default function ConnectionFormContainer(): h.JSX.Element | null {
     const { serverConnectionStatus, peerConnectionStatus, serverUrl } = useConnections();
     const { roomName } = useMessaging();
-    const { connect } = usePeerClient();
+    const { connect } = usePeerConnection();
     const { currentIdentity } = useIdentities();
     if (peerConnectionStatus === CONNECTION_STATUS.CONNECTED) return null;
 

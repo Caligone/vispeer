@@ -4,9 +4,9 @@ import useConnections from './ConnectionsContext';
 import useIdentities from './IdentitiesContext';
 import useMessaging, { Message, MESSAGE_TYPES } from './MessagingContext';
 import {
-    default as PeerClient,
+    default as PeerConnection,
     Events as PeerEvents,
-} from '../lib/PeerClient';
+} from '../lib/PeerConnection';
 import Identity from '../lib/Identity';
 
 type ContextType = {
@@ -40,7 +40,7 @@ const defaultState: ContextType = {
 const Context = createContext<ContextType>(defaultState);
 
 export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.Element => {
-    const { current: peerClient } = useRef(new PeerClient());
+    const { current: peerConnection } = useRef(new PeerConnection());
     const [ remoteStream, setRemoteStream ] = useState<MediaStream | null>(null);
     const [ localStream, setLocalStream ] = useState<MediaStream | null>(null);
     const {
@@ -57,12 +57,12 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
     } = useIdentities();
 
     const context: ContextType = {
-        connect: peerClient.connect.bind(peerClient),
-        sendTextMessage: peerClient.sendTextMessage.bind(peerClient),
-        removeAudioStream: peerClient.removeAudioStream.bind(peerClient),
-        addAudioStream: peerClient.addAudioStream.bind(peerClient),
-        removeVideoStream: peerClient.removeVideoStream.bind(peerClient),
-        addVideoStream: peerClient.addVideoStream.bind(peerClient),
+        connect: peerConnection.connect.bind(peerConnection),
+        sendTextMessage: peerConnection.sendTextMessage.bind(peerConnection),
+        removeAudioStream: peerConnection.removeAudioStream.bind(peerConnection),
+        addAudioStream: peerConnection.addAudioStream.bind(peerConnection),
+        removeVideoStream: peerConnection.removeVideoStream.bind(peerConnection),
+        addVideoStream: peerConnection.addVideoStream.bind(peerConnection),
         remoteStream,
         localStream,
     };
@@ -78,64 +78,64 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
     }
 
     useEffect(() => {
-        peerClient.setRoomName(roomName);
-        const unsubscribeToSignalingConnectionStatusChangedEvent = peerClient.signalingConnectionStatusChangedEvent
+        peerConnection.setRoomName(roomName);
+        const unsubscribeToSignalingConnectionStatusChangedEvent = peerConnection.signalingConnectionStatusChangedEvent
             .subscribe((event: PeerEvents.SignalingConnectionStatusChanged) => {
                 setServerConnectionStatus(event.status);
                 addInternalMessage(`Server connection status changed to ${event.status}`);
             });
-        const unsubscribeToConnectionStatusChangedEvent = peerClient.connectionStatusChangedEvent
+        const unsubscribeToConnectionStatusChangedEvent = peerConnection.connectionStatusChangedEvent
             .subscribe((event: PeerEvents.ConnectionStatusChanged) => {
                 setPeerConnectionStatus(event.status);
                 addInternalMessage(`Peer connection status changed to ${event.status}`);
             });
-        const unsubscribeToPeerIdentityReceived = peerClient.peerIdentityReceived
+        const unsubscribeToPeerIdentityReceived = peerConnection.peerIdentityReceived
             .subscribe((event: PeerEvents.IdentityReceived) => {
                 addPeerIdentity(event.identity);
             });
-        const unsubscribeToTextMessageReceivedEvent = peerClient.textMessageReceivedEvent
+        const unsubscribeToTextMessageReceivedEvent = peerConnection.textMessageReceivedEvent
             .subscribe((event: PeerEvents.TextMessageReceived) => {
                 addMessage({
                     ...event.message,
                     type: MESSAGE_TYPES.REMOTE,
                 });
             });
-        const unsubscribeToLocalAudioStreamAddedEvent = peerClient.localAudioStreamAddedEvent
+        const unsubscribeToLocalAudioStreamAddedEvent = peerConnection.localAudioStreamAddedEvent
             .subscribe((event: PeerEvents.LocalAudioStreamAdded) => {
                 setLocalStream(event.stream);
                 addInternalMessage('You started streaming audio');
             });
-        const unsubscribeToLocalAudioStreamRemovedEvent = peerClient.localAudioStreamRemovedEvent
+        const unsubscribeToLocalAudioStreamRemovedEvent = peerConnection.localAudioStreamRemovedEvent
             .subscribe((event: PeerEvents.LocalAudioStreamRemoved) => {
                 setLocalStream(event.stream);
                 addInternalMessage('You stopped streaming audio');
             });
-        const unsubscribeToLocalVideoStreamAddedEvent = peerClient.localVideoStreamAddedEvent
+        const unsubscribeToLocalVideoStreamAddedEvent = peerConnection.localVideoStreamAddedEvent
             .subscribe((event: PeerEvents.LocalVideoStreamAdded) => {
                 setLocalStream(event.stream);
                 addInternalMessage('You started streaming video');
             });
-        const unsubscribeToLocalVideoStreamRemovedEvent = peerClient.localVideoStreamRemovedEvent
+        const unsubscribeToLocalVideoStreamRemovedEvent = peerConnection.localVideoStreamRemovedEvent
             .subscribe((event: PeerEvents.LocalVideoStreamRemoved) => {
                 setLocalStream(event.stream);
                 addInternalMessage('You stopped streaming video');
             });
-        const unsubscribeToRemoteAudioStreamAddedEvent = peerClient.remoteAudioStreamAddedEvent
+        const unsubscribeToRemoteAudioStreamAddedEvent = peerConnection.remoteAudioStreamAddedEvent
             .subscribe((event: PeerEvents.RemoteAudioStreamAdded) => {
                 setRemoteStream(event.stream);
                 addInternalMessage('Your peer started streaming audio');
             });
-        const unsubscribeToRemoteAudioStreamRemovedEvent = peerClient.remoteAudioStreamRemovedEvent
+        const unsubscribeToRemoteAudioStreamRemovedEvent = peerConnection.remoteAudioStreamRemovedEvent
             .subscribe((event: PeerEvents.RemoteAudioStreamRemoved) => {
                 setRemoteStream(event.stream);
                 addInternalMessage('Your peer stopped streaming audio');
             });
-        const unsubscribeToRemoteVideoStreamAddedEvent = peerClient.remoteVideoStreamAddedEvent
+        const unsubscribeToRemoteVideoStreamAddedEvent = peerConnection.remoteVideoStreamAddedEvent
             .subscribe((event: PeerEvents.RemoteVideoStreamAdded) => {
                 setRemoteStream(event.stream);
                 addInternalMessage('Your peer started streaming video');
             });
-        const unsubscribeToRemoteVideoStreamRemovedEvent = peerClient.remoteVideoStreamRemovedEvent
+        const unsubscribeToRemoteVideoStreamRemovedEvent = peerConnection.remoteVideoStreamRemovedEvent
             .subscribe((event: PeerEvents.RemoteVideoStreamRemoved) => {
                 setRemoteStream(event.stream);
                 addInternalMessage('Your peer stopped streaming video');
@@ -158,12 +158,12 @@ export const Provider = ({ children }: h.JSX.ElementChildrenAttribute): h.JSX.El
     }, []);
 
     useEffect(() => {
-        peerClient.setRoomName(roomName);
+        peerConnection.setRoomName(roomName);
     }, [roomName]);
 
     useEffect(() => {
         if (!currentIdentity) return;
-        peerClient.setOwnIdentity(currentIdentity);
+        peerConnection.setOwnIdentity(currentIdentity);
     }, [currentIdentity]);
 
     return (

@@ -1,7 +1,7 @@
 import { h } from 'preact';
 
 import useConnections from '../Hooks/ConnectionsContext';
-import usePeerClient from '../Hooks/PeerClientContext';
+import usePeerConnection from '../Hooks/PeerConnectionContext';
 
 import { CONNECTION_STATUS } from '../lib/Connections';
 import { useEffect } from 'preact/hooks';
@@ -9,7 +9,7 @@ import { FlexContainer } from '../Components/Utilities';
 
 export default function RemoteVideoContainer(): h.JSX.Element | null {
     const { peerConnectionStatus } = useConnections();
-    const { remoteStream } = usePeerClient();
+    const { remoteStream } = usePeerConnection();
     if (peerConnectionStatus !== CONNECTION_STATUS.CONNECTED) return null;
 
     let videoRef: HTMLAudioElement | null = null;

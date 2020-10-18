@@ -1,7 +1,7 @@
 import { Fragment, h } from 'preact';
 
 import useConnections from '../Hooks/ConnectionsContext';
-import usePeerClient from '../Hooks/PeerClientContext';
+import usePeerConnection from '../Hooks/PeerConnectionContext';
 import useMessaging from '../Hooks/MessagingContext';
 
 import TopBarComponent from '../Components/TopBar';
@@ -18,7 +18,7 @@ export default function TopBar(): h.JSX.Element {
         addAudioStream,
         removeVideoStream,
         addVideoStream,
-    } = usePeerClient();
+    } = usePeerConnection();
     const {
         notificationPermission,
         toggleNotificationPermission,

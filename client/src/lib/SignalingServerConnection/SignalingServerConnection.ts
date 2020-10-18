@@ -10,7 +10,7 @@ import {
 import { CONNECTION_STATUS } from '../Connections';
 import { MESSAGE_TYPES, PeerSignalMessage, RoomJoinedMessage, RoomJoinMessage, RoomLeftMessage } from './Messages';
 
-export default class SignalingClient {
+export default class SignalingServerConnection {
 
     protected socket: WebSocket | null = null;
 

@@ -4,7 +4,7 @@ import { Router, Route } from 'preact-router';
 import { Provider as IdentitiesContext } from './Hooks/IdentitiesContext';
 import { Provider as MessagingProvider } from './Hooks/MessagingContext';
 import { Provider as ConnectionsProvider } from './Hooks/ConnectionsContext';
-import { Provider as PeerClientProvider } from './Hooks/PeerClientContext';
+import { Provider as PeerConnectionProvider } from './Hooks/PeerConnectionContext';
 
 import HomePage from './Pages/HomePage';
 import JoinPage from './Pages/JoinPage';
@@ -16,9 +16,9 @@ function Providers({ children }: h.JSX.ElementChildrenAttribute): h.JSX.Element 
         <IdentitiesContext>
             <MessagingProvider>
                 <ConnectionsProvider>
-                    <PeerClientProvider>
+                    <PeerConnectionProvider>
                         {children}
-                    </PeerClientProvider>
+                    </PeerConnectionProvider>
                 </ConnectionsProvider>
             </MessagingProvider>
         </IdentitiesContext>
