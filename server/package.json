@@ -1,7 +1,7 @@
 {
-  "name": "webrtc-server",
-  "version": "1.0.0",
-  "description": "",
+  "name": "vispeer-server",
+  "version": "0.1.0",
+  "description": "Vipeer server",
   "main": "src/index.ts",
   "scripts": {
     "start": "node src/index.ts",
