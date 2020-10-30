@@ -20,11 +20,13 @@ Build the client: `npm run build`
 ## To do
 - [ ] Multiple peers conversation
 - [ ] Multiple parallels conversations
+- [ ] Generic file p2p transfer
 - [ ] Persistant conversations
 - [ ] Improve UI/UX
 
 ## Done
 - [x] Connection between 2 peers
 - [x] Text-based messaging p2p
+- [x] Image file p2p transfer
 - [x] p2p video and audio streams
 - [x] Asymmetric encryption (based on [SubtleCrypto](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto) and over WebRTC native encryption)
